@@ -19,9 +19,9 @@ return new class extends Migration
 
             $table->string('password');
 
-            $table->string('role');
+            $table->string('role', 20);
 
-            $table->string('status');
+            $table->string('status', 20);
 
             $table->rememberToken();
 
