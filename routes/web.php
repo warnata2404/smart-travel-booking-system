@@ -1,6 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TripController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -19,9 +24,51 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Profile
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Booking
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/bookings', [BookingController::class, 'store'])
+        ->name('bookings.store');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Payment
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/payments', [PaymentController::class, 'store'])
+        ->name('payments.store');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Trip
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/trips/start', [TripController::class, 'start'])
+        ->name('trips.start');
+
+    Route::post('/trips/complete', [TripController::class, 'complete'])
+        ->name('trips.complete');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
