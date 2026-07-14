@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CompleteTripRequest;
-use App\Http\Requests\StartTripRequest;
 use App\Services\TripService;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class TripController extends Controller
 {
@@ -16,30 +16,56 @@ class TripController extends Controller
     ) {}
 
     /**
-     * Start a trip.
+     * Display trip list.
      */
-    public function start(StartTripRequest $request): RedirectResponse
+    public function index(): Response
     {
-        $this->tripService->start(
-            $request->validated()
-        );
-
-        return redirect()
-            ->back()
-            ->with('success', 'Trip started successfully.');
+        return Inertia::render('Trips/Index', [
+            'trips' => $this->tripService->getAll(),
+        ]);
     }
 
     /**
-     * Complete a trip.
+     * Display trip detail.
      */
-    public function complete(CompleteTripRequest $request): RedirectResponse
+    public function show(int $trip): Response
     {
-        $this->tripService->complete(
-            $request->validated()
-        );
+        return Inertia::render('Trips/Show', [
+            'trip' => $this->tripService->getById($trip),
+        ]);
+    }
+
+    /**
+     * Start trip.
+     */
+    public function start(int $trip): RedirectResponse
+    {
+        $tripModel = $this->tripService->getById($trip);
+
+        $this->tripService->start($tripModel);
 
         return redirect()
-            ->back()
-            ->with('success', 'Trip completed successfully.');
+            ->route('trips.show', $tripModel->id)
+            ->with(
+                'success',
+                'Trip started successfully.',
+            );
+    }
+
+    /**
+     * Complete trip.
+     */
+    public function complete(int $trip): RedirectResponse
+    {
+        $tripModel = $this->tripService->getById($trip);
+
+        $this->tripService->complete($tripModel);
+
+        return redirect()
+            ->route('trips.show', $tripModel->id)
+            ->with(
+                'success',
+                'Trip completed successfully.',
+            );
     }
 }

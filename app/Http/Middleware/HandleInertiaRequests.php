@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
@@ -23,16 +25,32 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * Define the props that are shared by default.
+     * Shared props.
      *
-     * @return array<string, mixed>
+     * @return array<string,mixed>
      */
     public function share(Request $request): array
     {
         return [
             ...parent::share($request),
+
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user()
+                    ? [
+                        'id' => $request->user()->id,
+                        'name' => $request->user()->name,
+                        'email' => $request->user()->email,
+                        'role' => $request->user()->role->value,
+                        'status' => $request->user()->status->value,
+                    ]
+                    : null,
+            ],
+
+            'flash' => [
+                'success' => fn() => $request->session()->get('success'),
+                'error' => fn() => $request->session()->get('error'),
+                'warning' => fn() => $request->session()->get('warning'),
+                'info' => fn() => $request->session()->get('info'),
             ],
         ];
     }

@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Reward extends Model
 {
@@ -65,7 +66,7 @@ class Reward extends Model
     /**
      * Voucher generated from this reward.
      */
-    public function voucher(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function voucher(): HasOne
     {
         return $this->hasOne(Voucher::class);
     }

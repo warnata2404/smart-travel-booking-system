@@ -6,34 +6,60 @@ const page = usePage();
 
 const currentUrl = computed(() => page.url);
 
-const menus = [
+const user = computed(() => page.props.auth.user);
+
+const isAdmin = computed(() => user.value?.role === "ADMIN");
+
+const isCustomer = computed(() => user.value?.role === "CUSTOMER");
+
+const adminMenus = [
     {
         label: "Dashboard",
         icon: "pi pi-home",
         route: "/dashboard",
     },
     {
-        label: "Booking",
+        label: "Cities",
+        icon: "pi pi-map-marker",
+        route: "/cities",
+    },
+    {
+        label: "Destinations",
+        icon: "pi pi-map",
+        route: "/destinations",
+    },
+    {
+        label: "Weather Configuration",
+        icon: "pi pi-cloud",
+        route: "/weather-configurations",
+    },
+    {
+        label: "Reward Configuration",
+        icon: "pi pi-cog",
+        route: "/reward-configurations",
+    },
+    {
+        label: "Bookings",
         icon: "pi pi-calendar-plus",
         route: "/bookings",
     },
     {
-        label: "Payment",
+        label: "Payments",
         icon: "pi pi-credit-card",
         route: "/payments",
     },
     {
-        label: "Trip",
+        label: "Trips",
         icon: "pi pi-map",
         route: "/trips",
     },
     {
-        label: "Reward",
+        label: "Rewards",
         icon: "pi pi-gift",
         route: "/rewards",
     },
     {
-        label: "Voucher",
+        label: "Vouchers",
         icon: "pi pi-ticket",
         route: "/vouchers",
     },
@@ -43,6 +69,61 @@ const menus = [
         route: "/profile",
     },
 ];
+
+const customerMenus = [
+    {
+        label: "Dashboard",
+        icon: "pi pi-home",
+        route: "/dashboard",
+    },
+    {
+        label: "Travel Analysis",
+        icon: "pi pi-compass",
+        route: "/travel-analysis",
+    },
+    {
+        label: "Bookings",
+        icon: "pi pi-calendar-plus",
+        route: "/bookings",
+    },
+    {
+        label: "Payments",
+        icon: "pi pi-credit-card",
+        route: "/payments",
+    },
+    {
+        label: "Trips",
+        icon: "pi pi-map",
+        route: "/trips",
+    },
+    {
+        label: "Rewards",
+        icon: "pi pi-gift",
+        route: "/rewards",
+    },
+    {
+        label: "Vouchers",
+        icon: "pi pi-ticket",
+        route: "/vouchers",
+    },
+    {
+        label: "Profile",
+        icon: "pi pi-user",
+        route: "/profile",
+    },
+];
+
+const menus = computed(() => {
+    if (isAdmin.value) {
+        return adminMenus;
+    }
+
+    if (isCustomer.value) {
+        return customerMenus;
+    }
+
+    return [];
+});
 </script>
 
 <template>

@@ -30,7 +30,7 @@ return new class extends Migration
             $table->decimal('subtotal', 15, 2);
 
             $table->decimal('discount', 15, 2)
-                ->default(0);
+                ->default(0.00);
 
             $table->decimal('grand_total', 15, 2);
 

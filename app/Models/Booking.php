@@ -24,7 +24,6 @@ class Booking extends Model
         'customer_id',
         'origin_city_id',
         'destination_id',
-        'destination_name',
         'price',
         'distance',
         'estimated_duration',
@@ -45,7 +44,7 @@ class Booking extends Model
             'distance' => 'decimal:2',
             'estimated_duration' => 'integer',
             'departure_date' => 'date',
-            'departure_time' => 'datetime:H:i:s',
+            'departure_time' => 'string',
             'status' => BookingStatus::class,
         ];
     }

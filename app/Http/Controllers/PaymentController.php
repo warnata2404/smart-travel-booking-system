@@ -7,6 +7,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePaymentRequest;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class PaymentController extends Controller
 {
@@ -15,16 +17,59 @@ class PaymentController extends Controller
     ) {}
 
     /**
-     * Store a payment.
+     * Display payment list.
      */
-    public function store(StorePaymentRequest $request): RedirectResponse
+    public function index(): Response
     {
-        $this->paymentService->store(
-            $request->validated()
+        return Inertia::render('Payments/Index', [
+            'payments' => $this->paymentService->getAll(),
+        ]);
+    }
+
+    /**
+     * Display payment form.
+     */
+    public function create(): Response
+    {
+        return Inertia::render('Payments/Create', [
+            'bookings' => $this->paymentService->getAvailableBookings(),
+
+            'vouchers' => $this->paymentService->getAvailableVouchers(),
+        ]);
+    }
+
+    /**
+     * Store payment.
+     */
+    public function store(
+        StorePaymentRequest $request,
+    ): RedirectResponse {
+
+        $payment = $this->paymentService->create(
+            $request->validated(),
         );
 
         return redirect()
-            ->back()
-            ->with('success', 'Payment completed successfully.');
+            ->route(
+                'payments.show',
+                $payment->id,
+            )
+            ->with(
+                'success',
+                'Payment completed successfully.',
+            );
+    }
+
+    /**
+     * Display payment detail.
+     */
+    public function show(
+        int $payment,
+    ): Response {
+
+        return Inertia::render('Payments/Show', [
+            'payment' => $this->paymentService
+                ->getById($payment),
+        ]);
     }
 }

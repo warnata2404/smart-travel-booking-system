@@ -17,11 +17,12 @@ return new class extends Migration
             $table->text('description')->nullable();
 
             $table->string('status', 20)
-                ->default(CityStatus::ACTIVE->value);
+                ->default(CityStatus::ACTIVE->value)
+                ->index();
 
             $table->timestamps();
 
-            $table->softDeletes();
+            $table->softDeletes()->index();
         });
     }
 

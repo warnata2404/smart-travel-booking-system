@@ -34,6 +34,11 @@ return new class extends Migration
                 ->default(DestinationStatus::ACTIVE->value)
                 ->index();
 
+            $table->unique([
+                'city_id',
+                'name',
+            ]);
+
             $table->timestamps();
 
             $table->softDeletes();

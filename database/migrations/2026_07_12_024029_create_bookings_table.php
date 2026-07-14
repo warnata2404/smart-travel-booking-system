@@ -29,8 +29,6 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
 
-            $table->string('destination_name', 100);
-
             $table->decimal('price', 15, 2);
 
             $table->decimal('distance', 10, 2);
@@ -46,8 +44,6 @@ return new class extends Migration
                 ->index();
 
             $table->timestamps();
-
-            $table->index('customer_id');
         });
     }
 

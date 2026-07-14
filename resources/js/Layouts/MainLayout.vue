@@ -3,10 +3,18 @@ import Sidebar from "@/Components/Shared/Sidebar.vue";
 import TopNavigation from "@/Components/Shared/TopNavigation.vue";
 import AppBreadcrumb from "@/Components/Shared/AppBreadcrumb.vue";
 import AppFooter from "@/Components/Shared/AppFooter.vue";
+
+import AppToast from "@/Components/Shared/AppToast.vue";
+import AppConfirmDialog from "@/Components/Shared/AppConfirmDialog.vue";
 </script>
 
 <template>
     <div class="min-h-screen bg-gray-100 flex">
+        <!-- Global Components -->
+        <AppToast />
+
+        <AppConfirmDialog />
+
         <!-- Sidebar -->
         <Sidebar />
 

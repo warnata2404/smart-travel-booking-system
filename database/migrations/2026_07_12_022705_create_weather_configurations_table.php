@@ -19,7 +19,8 @@ return new class extends Migration
             $table->text('recommendation');
 
             $table->string('status', 20)
-                ->default(WeatherConfigurationStatus::ACTIVE->value);
+                ->default(WeatherConfigurationStatus::ACTIVE->value)
+                ->index();
 
             $table->timestamps();
 
