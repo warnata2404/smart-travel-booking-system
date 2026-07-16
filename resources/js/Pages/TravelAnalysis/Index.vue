@@ -1,12 +1,19 @@
 <script setup>
-import MainLayout from "@/Layouts/MainLayout.vue";
-
 import { Head, Link, useForm } from "@inertiajs/vue3";
 
-import Card from "primevue/card";
+import MainLayout from "@/Layouts/MainLayout.vue";
+
+import AppPageHeader from "@/Components/Page/AppPageHeader.vue";
+import AppPageToolbar from "@/Components/Page/AppPageToolbar.vue";
+import AppPageCard from "@/Components/Page/AppPageCard.vue";
+
+import AppFormSection from "@/Components/Form/AppFormSection.vue";
+import AppFormField from "@/Components/Form/AppFormField.vue";
+import AppFormActions from "@/Components/Form/AppFormActions.vue";
+
 import Button from "primevue/button";
 import Select from "primevue/select";
-import Calendar from "primevue/calendar";
+import DatePicker from "primevue/datepicker";
 import Divider from "primevue/divider";
 import Tag from "primevue/tag";
 
@@ -46,123 +53,143 @@ function analyze() {
 <template>
     <Head title="Travel Analysis" />
 
-    <Card>
-        <template #title> Travel Analysis </template>
+    <div class="space-y-6">
+        <AppPageHeader
+            title="Travel Analysis"
+            description="Analyze your travel before making a booking."
+        />
 
-        <template #content>
-            <div class="grid gap-5">
-                <div>
-                    <label class="mb-2 block font-medium"> Origin City </label>
+        <AppPageCard>
+            <form @submit.prevent="analyze">
+                <AppFormSection
+                    title="Travel Information"
+                    description="Select your travel information."
+                >
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <AppFormField
+                            label="Origin City"
+                            :error="form.errors.origin_city_id"
+                            required
+                        >
+                            <Select
+                                v-model="form.origin_city_id"
+                                :options="cities"
+                                optionLabel="name"
+                                optionValue="id"
+                                placeholder="Select Origin City"
+                                fluid
+                            />
+                        </AppFormField>
 
-                    <Select
-                        v-model="form.origin_city_id"
-                        :options="cities"
-                        optionLabel="name"
-                        optionValue="id"
-                        placeholder="Select Origin City"
-                        class="w-full"
+                        <AppFormField
+                            label="Destination"
+                            :error="form.errors.destination_id"
+                            required
+                        >
+                            <Select
+                                v-model="form.destination_id"
+                                :options="destinations"
+                                optionLabel="name"
+                                optionValue="id"
+                                placeholder="Select Destination"
+                                fluid
+                            />
+                        </AppFormField>
+
+                        <AppFormField
+                            label="Departure Date"
+                            :error="form.errors.departure_date"
+                            required
+                        >
+                            <DatePicker
+                                v-model="form.departure_date"
+                                dateFormat="yy-mm-dd"
+                                showIcon
+                                fluid
+                            />
+                        </AppFormField>
+
+                        <AppFormField
+                            label="Departure Time"
+                            :error="form.errors.departure_time"
+                            required
+                        >
+                            <DatePicker
+                                v-model="form.departure_time"
+                                timeOnly
+                                hourFormat="24"
+                                showIcon
+                                fluid
+                            />
+                        </AppFormField>
+                    </div>
+                </AppFormSection>
+
+                <AppFormActions>
+                    <Button
+                        type="submit"
+                        label="Analyze Travel"
+                        icon="pi pi-search"
+                        :loading="form.processing"
                     />
-                </div>
+                </AppFormActions>
+            </form>
+        </AppPageCard>
 
-                <div>
-                    <label class="mb-2 block font-medium"> Destination </label>
-
-                    <Select
-                        v-model="form.destination_id"
-                        :options="destinations"
-                        optionLabel="name"
-                        optionValue="id"
-                        placeholder="Select Destination"
-                        class="w-full"
-                    />
-                </div>
-
-                <div>
-                    <label class="mb-2 block font-medium">
-                        Departure Date
-                    </label>
-
-                    <Calendar
-                        v-model="form.departure_date"
-                        dateFormat="yy-mm-dd"
-                        showIcon
-                        class="w-full"
-                    />
-                </div>
-
-                <div>
-                    <label class="mb-2 block font-medium">
-                        Departure Time
-                    </label>
-
-                    <Calendar
-                        v-model="form.departure_time"
-                        timeOnly
-                        hourFormat="24"
-                        showIcon
-                        class="w-full"
-                    />
-                </div>
-
-                <Button
-                    label="Analyze Travel"
-                    icon="pi pi-search"
-                    @click="analyze"
-                    :loading="form.processing"
-                />
-            </div>
-
-            <template v-if="analysisResult">
-                <Divider />
-
-                <div class="grid gap-4">
+        <AppPageCard v-if="analysisResult">
+            <AppFormSection
+                title="Analysis Result"
+                description="Travel estimation generated by the system."
+            >
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
-                        <strong>Distance</strong>
+                        <div class="text-sm text-gray-500">Distance</div>
 
-                        <div>
+                        <div class="text-lg font-semibold">
                             {{ analysisResult.distance }}
                         </div>
                     </div>
 
                     <div>
-                        <strong>Estimated Duration</strong>
+                        <div class="text-sm text-gray-500">
+                            Estimated Duration
+                        </div>
 
-                        <div>
+                        <div class="text-lg font-semibold">
                             {{ analysisResult.estimated_duration }}
                         </div>
                     </div>
 
                     <div>
-                        <strong>Estimated Price</strong>
+                        <div class="text-sm text-gray-500">Estimated Price</div>
 
-                        <div>
+                        <div class="text-lg font-semibold">
                             {{ analysisResult.price }}
                         </div>
                     </div>
 
                     <div>
-                        <strong>Weather</strong>
+                        <div class="text-sm text-gray-500">Weather</div>
 
-                        <div>
-                            {{ analysisResult.weather }}
-                        </div>
+                        <Tag :value="analysisResult.weather" />
                     </div>
 
                     <div>
-                        <strong>Reward</strong>
+                        <div class="text-sm text-gray-500">Reward</div>
 
-                        <div>
-                            <Tag
-                                :value="analysisResult.reward"
-                                severity="success"
-                            />
-                        </div>
+                        <Tag
+                            :value="analysisResult.reward"
+                            severity="success"
+                        />
                     </div>
 
-                    <div v-if="analysisResult.recommendation">
-                        <strong>Recommendation</strong>
+                    <div
+                        v-if="analysisResult.recommendation"
+                        class="md:col-span-2"
+                    >
+                        <div class="text-sm text-gray-500">Recommendation</div>
 
-                        <div>
+                        <div class="mt-2">
                             {{ analysisResult.recommendation }}
                         </div>
                     </div>
@@ -186,13 +213,13 @@ function analyze() {
                         "
                     >
                         <Button
-                            label="Book Now"
+                            label="Continue to Booking"
                             icon="pi pi-arrow-right"
                             severity="success"
                         />
                     </Link>
                 </div>
-            </template>
-        </template>
-    </Card>
+            </AppFormSection>
+        </AppPageCard>
+    </div>
 </template>

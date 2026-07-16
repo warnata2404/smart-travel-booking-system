@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\RewardConfigurationStatus;
 use App\Enums\WeatherConfigurationStatus;
+use App\Models\City;
 use App\Models\Destination;
 use App\Models\RewardConfiguration;
 use App\Models\WeatherConfiguration;
@@ -21,6 +22,9 @@ class TravelAnalysisService
      */
     public function analyze(array $data): array
     {
+        $originCity = City::query()
+            ->findOrFail($data['origin_city_id']);
+
         $destination = Destination::query()
             ->with('city')
             ->findOrFail($data['destination_id']);
@@ -30,10 +34,10 @@ class TravelAnalysisService
         | Weather Configuration
         |--------------------------------------------------------------------------
         |
-        | Saat ini aplikasi belum terintegrasi dengan Weather API.
-        | Oleh karena itu digunakan konfigurasi cuaca aktif sebagai sumber
-        | rekomendasi. Di tahap berikutnya query ini dapat diganti berdasarkan
-        | hasil analisis cuaca aktual.
+        | The application is not yet integrated with a Weather API.
+        | Therefore, the active weather configuration is used as the
+        | recommendation source. This query can be replaced later with
+        | actual weather analysis.
         |
         */
 
@@ -64,7 +68,9 @@ class TravelAnalysisService
             ->first();
 
         return [
-            'origin_city_id' => $data['origin_city_id'],
+            'origin_city_id' => $originCity->id,
+
+            'origin_city' => $originCity->name,
 
             'destination_id' => $destination->id,
 
