@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\CityStatus;
 use App\Http\Requests\StoreCityRequest;
 use App\Http\Requests\UpdateCityRequest;
 use App\Models\City;
 use App\Services\CityService;
+use App\Support\EnumOptions;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -33,7 +35,9 @@ class CityController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Cities/Create');
+        return Inertia::render('Cities/Create', [
+            'statuses' => EnumOptions::from(CityStatus::class),
+        ]);
     }
 
     /**
@@ -42,6 +46,7 @@ class CityController extends Controller
     public function store(
         StoreCityRequest $request,
     ): RedirectResponse {
+
         $this->cityService->create(
             $request->validated(),
         );
@@ -57,10 +62,16 @@ class CityController extends Controller
     /**
      * Display edit form.
      */
-    public function edit(City $city): Response
-    {
+    public function edit(
+        City $city,
+    ): Response {
+
         return Inertia::render('Cities/Edit', [
             'city' => $this->cityService->getById($city->id),
+
+            'statuses' => EnumOptions::from(
+                CityStatus::class,
+            ),
         ]);
     }
 

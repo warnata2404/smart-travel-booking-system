@@ -1,19 +1,26 @@
 <script setup>
 import { Head, Link, useForm } from "@inertiajs/vue3";
+
 import MainLayout from "@/Layouts/MainLayout.vue";
 
-import Card from "primevue/card";
+import AppPageHeader from "@/Components/Page/AppPageHeader.vue";
+import AppPageToolbar from "@/Components/Page/AppPageToolbar.vue";
+import AppPageCard from "@/Components/Page/AppPageCard.vue";
+
+import AppFormSection from "@/Components/Form/AppFormSection.vue";
+import AppFormField from "@/Components/Form/AppFormField.vue";
+import AppFormActions from "@/Components/Form/AppFormActions.vue";
+
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import Textarea from "primevue/textarea";
 import Select from "primevue/select";
-import Message from "primevue/message";
 
 defineOptions({
     layout: MainLayout,
 });
 
-const props = defineProps({
+defineProps({
     statuses: {
         type: Array,
         required: true,
@@ -35,95 +42,58 @@ function submit() {
     <Head title="Create City" />
 
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-semibold">Create City</h1>
+        <AppPageHeader title="Create City" description="Add a new city.">
+            <template #actions>
+                <AppPageToolbar>
+                    <Link :href="route('cities.index')">
+                        <Button label="Back" icon="pi pi-arrow-left" outlined />
+                    </Link>
+                </AppPageToolbar>
+            </template>
+        </AppPageHeader>
 
-                <p class="mt-1 text-gray-500">Add a new city.</p>
-            </div>
+        <AppPageCard>
+            <form @submit.prevent="submit">
+                <AppFormSection
+                    title="City Information"
+                    description="Fill in the city information below."
+                >
+                    <AppFormField
+                        label="City Name"
+                        required
+                        :error="form.errors.name"
+                    >
+                        <InputText v-model="form.name" fluid />
+                    </AppFormField>
 
-            <Link :href="route('cities.index')">
-                <Button label="Back" icon="pi pi-arrow-left" outlined />
-            </Link>
-        </div>
+                    <AppFormField
+                        label="Description"
+                        :error="form.errors.description"
+                    >
+                        <Textarea v-model="form.description" rows="4" fluid />
+                    </AppFormField>
 
-        <Card>
-            <template #content>
-                <form class="space-y-6" @submit.prevent="submit">
-                    <div class="space-y-2">
-                        <label class="font-medium"> City Name </label>
-
-                        <InputText v-model="form.name" class="w-full" />
-
-                        <Message
-                            v-if="form.errors.name"
-                            severity="error"
-                            size="small"
-                            variant="simple"
-                        >
-                            {{ form.errors.name }}
-                        </Message>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="font-medium"> Description </label>
-
-                        <Textarea
-                            v-model="form.description"
-                            rows="4"
-                            class="w-full"
-                        />
-
-                        <Message
-                            v-if="form.errors.description"
-                            severity="error"
-                            size="small"
-                            variant="simple"
-                        >
-                            {{ form.errors.description }}
-                        </Message>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="font-medium"> Status </label>
-
+                    <AppFormField
+                        label="Status"
+                        required
+                        :error="form.errors.status"
+                    >
                         <Select
                             v-model="form.status"
                             :options="statuses"
                             optionLabel="label"
                             optionValue="value"
-                            class="w-full"
+                            fluid
                         />
+                    </AppFormField>
+                </AppFormSection>
 
-                        <Message
-                            v-if="form.errors.status"
-                            severity="error"
-                            size="small"
-                            variant="simple"
-                        >
-                            {{ form.errors.status }}
-                        </Message>
-                    </div>
-
-                    <div class="flex justify-end gap-3">
-                        <Link :href="route('cities.index')">
-                            <Button
-                                type="button"
-                                label="Cancel"
-                                severity="secondary"
-                                outlined
-                            />
-                        </Link>
-
-                        <Button
-                            type="submit"
-                            label="Save"
-                            icon="pi pi-save"
-                            :loading="form.processing"
-                        />
-                    </div>
-                </form>
-            </template>
-        </Card>
+                <AppFormActions
+                    :cancel-route="route('cities.index')"
+                    submit-label="Save"
+                    :loading="form.processing"
+                />
+            </form>
+        </AppPageCard>
     </div>
 </template>
