@@ -36,6 +36,8 @@ createInertiaApp({
             theme: {
                 preset: Aura,
             },
+            ripple: true,
+            inputVariant: "filled",
         });
 
         app.use(ToastService);
@@ -46,6 +48,6 @@ createInertiaApp({
     },
 
     progress: {
-        color: "#4B5563",
+        color: "#10b981",
     },
 });

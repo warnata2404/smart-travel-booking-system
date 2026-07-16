@@ -4,39 +4,63 @@ import { Link, usePage } from "@inertiajs/vue3";
 
 const page = usePage();
 
+const labelMap = {
+    dashboard: "Dashboard",
+
+    cities: "Cities",
+    destinations: "Destinations",
+
+    "reward-configurations": "Reward Configurations",
+    "weather-configurations": "Weather Configurations",
+
+    "travel-analysis": "Travel Analysis",
+
+    bookings: "Bookings",
+    payments: "Payments",
+    trips: "Trips",
+    rewards: "Rewards",
+    vouchers: "Vouchers",
+
+    create: "Create",
+    edit: "Edit",
+};
+
 const breadcrumbs = computed(() => {
     const segments = page.url.split("?")[0].split("/").filter(Boolean);
 
-    if (segments.length === 0) {
-        return [
-            {
-                label: "Dashboard",
-                url: "/dashboard",
-            },
-        ];
+    if (
+        segments.length === 0 ||
+        (segments.length === 1 && segments[0] === "dashboard")
+    ) {
+        return [];
     }
 
     let currentPath = "";
 
-    return segments.map((segment) => {
-        currentPath += `/${segment}`;
+    return segments
+        .filter((segment) => !/^\d+$/.test(segment))
+        .map((segment) => {
+            currentPath += `/${segment}`;
 
-        return {
-            label: segment
-                .replace(/-/g, " ")
-                .replace(/\b\w/g, (char) => char.toUpperCase()),
-            url: currentPath,
-        };
-    });
+            return {
+                label:
+                    labelMap[segment] ??
+                    segment
+                        .replace(/-/g, " ")
+                        .replace(/\b\w/g, (c) => c.toUpperCase()),
+                url: currentPath,
+            };
+        });
 });
 </script>
 
 <template>
     <nav
+        v-if="breadcrumbs.length"
         aria-label="Breadcrumb"
-        class="flex items-center gap-2 text-sm text-gray-500"
+        class="mb-6 flex items-center gap-2 text-sm text-gray-500"
     >
-        <Link href="/dashboard" class="hover:text-primary transition-colors">
+        <Link href="/dashboard" class="transition-colors hover:text-primary">
             Dashboard
         </Link>
 
@@ -53,7 +77,7 @@ const breadcrumbs = computed(() => {
             <Link
                 v-else
                 :href="item.url"
-                class="hover:text-primary transition-colors"
+                class="transition-colors hover:text-primary"
             >
                 {{ item.label }}
             </Link>
