@@ -1,13 +1,20 @@
 <script setup>
 import { Head, Link, useForm } from "@inertiajs/vue3";
+
 import MainLayout from "@/Layouts/MainLayout.vue";
 
-import Card from "primevue/card";
+import AppPageHeader from "@/Components/Page/AppPageHeader.vue";
+import AppPageToolbar from "@/Components/Page/AppPageToolbar.vue";
+import AppPageCard from "@/Components/Page/AppPageCard.vue";
+
+import AppFormSection from "@/Components/Form/AppFormSection.vue";
+import AppFormField from "@/Components/Form/AppFormField.vue";
+import AppFormActions from "@/Components/Form/AppFormActions.vue";
+
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import Textarea from "primevue/textarea";
 import Select from "primevue/select";
-import Message from "primevue/message";
 
 defineOptions({
     layout: MainLayout,
@@ -43,116 +50,85 @@ function submit() {
     <Head title="Edit Weather Configuration" />
 
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-semibold">
-                    Edit Weather Configuration
-                </h1>
+        <AppPageHeader
+            title="Edit Weather Configuration"
+            description="Update weather configuration."
+        >
+            <template #actions>
+                <AppPageToolbar>
+                    <Link :href="route('weather-configurations.index')">
+                        <Button label="Back" icon="pi pi-arrow-left" outlined />
+                    </Link>
+                </AppPageToolbar>
+            </template>
+        </AppPageHeader>
 
-                <p class="mt-1 text-gray-500">Update weather configuration.</p>
-            </div>
+        <AppPageCard>
+            <form @submit.prevent="submit">
+                <AppFormSection
+                    title="Weather Configuration Information"
+                    description="Update the weather configuration information below."
+                >
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <AppFormField
+                            label="Rule Type"
+                            :error="form.errors.rule_type"
+                            required
+                        >
+                            <InputText v-model="form.rule_type" fluid />
+                        </AppFormField>
 
-            <Link :href="route('weather-configurations.index')">
-                <Button label="Back" icon="pi pi-arrow-left" outlined />
-            </Link>
-        </div>
+                        <AppFormField
+                            label="Weather"
+                            :error="form.errors.weather"
+                            required
+                        >
+                            <InputText v-model="form.weather" fluid />
+                        </AppFormField>
 
-        <Card>
-            <template #content>
-                <form class="space-y-6" @submit.prevent="submit">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label>Rule Type</label>
-
-                            <InputText
-                                v-model="form.rule_type"
-                                class="w-full"
-                            />
-
-                            <Message
-                                v-if="form.errors.rule_type"
-                                severity="error"
-                                size="small"
-                                variant="simple"
+                        <div class="md:col-span-2">
+                            <AppFormField
+                                label="Recommendation"
+                                :error="form.errors.recommendation"
+                                required
                             >
-                                {{ form.errors.rule_type }}
-                            </Message>
+                                <Textarea
+                                    v-model="form.recommendation"
+                                    rows="4"
+                                    fluid
+                                />
+                            </AppFormField>
                         </div>
 
-                        <div class="space-y-2">
-                            <label>Weather</label>
-
-                            <InputText v-model="form.weather" class="w-full" />
-
-                            <Message
-                                v-if="form.errors.weather"
-                                severity="error"
-                                size="small"
-                                variant="simple"
-                            >
-                                {{ form.errors.weather }}
-                            </Message>
-                        </div>
-
-                        <div class="space-y-2 md:col-span-2">
-                            <label>Recommendation</label>
-
-                            <Textarea
-                                v-model="form.recommendation"
-                                rows="4"
-                                class="w-full"
-                            />
-
-                            <Message
-                                v-if="form.errors.recommendation"
-                                severity="error"
-                                size="small"
-                                variant="simple"
-                            >
-                                {{ form.errors.recommendation }}
-                            </Message>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label>Status</label>
-
+                        <AppFormField
+                            label="Status"
+                            :error="form.errors.status"
+                            required
+                        >
                             <Select
                                 v-model="form.status"
                                 :options="statuses"
                                 optionLabel="label"
                                 optionValue="value"
-                                class="w-full"
+                                fluid
                             />
-
-                            <Message
-                                v-if="form.errors.status"
-                                severity="error"
-                                size="small"
-                                variant="simple"
-                            >
-                                {{ form.errors.status }}
-                            </Message>
-                        </div>
+                        </AppFormField>
                     </div>
+                </AppFormSection>
 
-                    <div class="flex justify-end gap-3">
-                        <Link :href="route('weather-configurations.index')">
-                            <Button
-                                label="Cancel"
-                                severity="secondary"
-                                outlined
-                            />
-                        </Link>
+                <AppFormActions>
+                    <Link :href="route('weather-configurations.index')">
+                        <Button label="Cancel" severity="secondary" outlined />
+                    </Link>
 
-                        <Button
-                            type="submit"
-                            label="Update"
-                            icon="pi pi-save"
-                            :loading="form.processing"
-                        />
-                    </div>
-                </form>
-            </template>
-        </Card>
+                    <Button
+                        type="submit"
+                        label="Update"
+                        icon="pi pi-save"
+                        :loading="form.processing"
+                    />
+                </AppFormActions>
+            </form>
+        </AppPageCard>
     </div>
 </template>

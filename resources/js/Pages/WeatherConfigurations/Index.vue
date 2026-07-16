@@ -1,19 +1,25 @@
 <script setup>
 import { Head, Link, router } from "@inertiajs/vue3";
+
 import MainLayout from "@/Layouts/MainLayout.vue";
 
-import Card from "primevue/card";
+import AppPageHeader from "@/Components/Page/AppPageHeader.vue";
+import AppPageToolbar from "@/Components/Page/AppPageToolbar.vue";
+import AppPageCard from "@/Components/Page/AppPageCard.vue";
+
+import AppDataTable from "@/Components/Table/AppDataTable.vue";
+import AppStatusTag from "@/Components/Table/AppStatusTag.vue";
+
 import Button from "primevue/button";
-import DataTable from "primevue/datatable";
 import Column from "primevue/column";
-import Tag from "primevue/tag";
+
 import { useConfirm } from "primevue/useconfirm";
 
 defineOptions({
     layout: MainLayout,
 });
 
-const props = defineProps({
+defineProps({
     weatherConfigurations: {
         type: Array,
         required: true,
@@ -22,18 +28,21 @@ const props = defineProps({
 
 const confirm = useConfirm();
 
-function statusSeverity(status) {
-    return status === "ACTIVE" ? "success" : "danger";
-}
-
-function confirmDelete(id) {
+function deleteWeatherConfiguration(weatherConfiguration) {
     confirm.require({
-        message: "Are you sure you want to delete this weather configuration?",
-        header: "Delete Confirmation",
+        header: "Delete Weather Configuration",
+        message: `Are you sure you want to delete "${weatherConfiguration.rule_type}"?`,
         icon: "pi pi-exclamation-triangle",
 
+        acceptClass: "p-button-danger",
+
         accept: () => {
-            router.delete(route("weather-configurations.destroy", id));
+            router.delete(
+                route(
+                    "weather-configurations.destroy",
+                    weatherConfiguration.id,
+                ),
+            );
         },
     });
 }
@@ -43,69 +52,67 @@ function confirmDelete(id) {
     <Head title="Weather Configurations" />
 
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-semibold">
-                    Weather Configuration Management
-                </h1>
-
-                <p class="mt-1 text-gray-500">Manage weather analysis rules.</p>
-            </div>
-
-            <Link :href="route('weather-configurations.create')">
-                <Button label="Add Weather Configuration" icon="pi pi-plus" />
-            </Link>
-        </div>
-
-        <Card>
-            <template #content>
-                <DataTable
-                    :value="weatherConfigurations"
-                    paginator
-                    :rows="10"
-                    stripedRows
-                    responsiveLayout="scroll"
-                >
-                    <Column field="rule_type" header="Rule Type" />
-
-                    <Column field="weather" header="Weather" />
-
-                    <Column field="recommendation" header="Recommendation" />
-
-                    <Column header="Status">
-                        <template #body="{ data }">
-                            <Tag
-                                :value="data.status"
-                                :severity="statusSeverity(data.status)"
-                            />
-                        </template>
-                    </Column>
-
-                    <Column header="Action" style="width: 180px">
-                        <template #body="{ data }">
-                            <div class="flex gap-2">
-                                <Link
-                                    :href="
-                                        route(
-                                            'weather-configurations.edit',
-                                            data.id,
-                                        )
-                                    "
-                                >
-                                    <Button icon="pi pi-pencil" outlined />
-                                </Link>
-
-                                <Button
-                                    icon="pi pi-trash"
-                                    severity="danger"
-                                    outlined
-                                    @click="confirmDelete(data.id)"
-                                />
-                            </div>
-                        </template>
-                    </Column>
-                </DataTable>
+        <AppPageHeader
+            title="Weather Configuration Management"
+            description="Manage weather analysis rules."
+        >
+            <template #actions>
+                <AppPageToolbar>
+                    <Link :href="route('weather-configurations.create')">
+                        <Button
+                            label="Add Weather Configuration"
+                            icon="pi pi-plus"
+                        />
+                    </Link>
+                </AppPageToolbar>
             </template>
-        </Card>
+        </AppPageHeader>
+
+        <AppPageCard>
+            <AppDataTable
+                :value="weatherConfigurations"
+                emptyMessage="No weather configurations found."
+            >
+                <Column field="rule_type" header="Rule Type" sortable />
+
+                <Column field="weather" header="Weather" sortable />
+
+                <Column field="recommendation" header="Recommendation" />
+
+                <Column header="Status" style="width: 140px">
+                    <template #body="{ data }">
+                        <AppStatusTag :status="data.status" />
+                    </template>
+                </Column>
+
+                <Column header="Actions" style="width: 170px">
+                    <template #body="{ data }">
+                        <div class="flex items-center gap-2">
+                            <Link
+                                :href="
+                                    route(
+                                        'weather-configurations.edit',
+                                        data.id,
+                                    )
+                                "
+                            >
+                                <Button
+                                    icon="pi pi-pencil"
+                                    severity="warning"
+                                    outlined
+                                />
+                            </Link>
+
+                            <Button
+                                icon="pi pi-trash"
+                                severity="danger"
+                                outlined
+                                @click="deleteWeatherConfiguration(data)"
+                            />
+                        </div>
+                    </template>
+                </Column>
+            </AppDataTable>
+        </AppPageCard>
     </div>
 </template>

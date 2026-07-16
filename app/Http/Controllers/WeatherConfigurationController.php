@@ -9,6 +9,7 @@ use App\Http\Requests\StoreWeatherConfigurationRequest;
 use App\Http\Requests\UpdateWeatherConfigurationRequest;
 use App\Models\WeatherConfiguration;
 use App\Services\WeatherConfigurationService;
+use App\Support\EnumOptions;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -35,7 +36,9 @@ class WeatherConfigurationController extends Controller
     public function create(): Response
     {
         return Inertia::render('WeatherConfigurations/Create', [
-            'statuses' => WeatherConfigurationStatus::options(),
+            'statuses' => EnumOptions::from(
+                WeatherConfigurationStatus::class,
+            ),
         ]);
     }
 
@@ -66,12 +69,12 @@ class WeatherConfigurationController extends Controller
     ): Response {
 
         return Inertia::render('WeatherConfigurations/Edit', [
-
             'weatherConfiguration' => $this->weatherConfigurationService
                 ->getById($weatherConfiguration->id),
 
-            'statuses' => WeatherConfigurationStatus::options(),
-
+            'statuses' => EnumOptions::from(
+                WeatherConfigurationStatus::class,
+            ),
         ]);
     }
 
