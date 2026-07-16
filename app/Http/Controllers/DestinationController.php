@@ -11,6 +11,7 @@ use App\Http\Requests\UpdateDestinationRequest;
 use App\Models\City;
 use App\Models\Destination;
 use App\Services\DestinationService;
+use App\Support\EnumOptions;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -41,9 +42,13 @@ class DestinationController extends Controller
                 ->orderBy('name')
                 ->get(),
 
-            'categories' => DestinationCategory::options(),
+            'categories' => EnumOptions::from(
+                DestinationCategory::class,
+            ),
 
-            'statuses' => DestinationStatus::options(),
+            'statuses' => EnumOptions::from(
+                DestinationStatus::class,
+            ),
         ]);
     }
 
@@ -74,7 +79,6 @@ class DestinationController extends Controller
     ): Response {
 
         return Inertia::render('Destinations/Edit', [
-
             'destination' => $this->destinationService
                 ->getById($destination->id),
 
@@ -82,10 +86,13 @@ class DestinationController extends Controller
                 ->orderBy('name')
                 ->get(),
 
-            'categories' => DestinationCategory::options(),
+            'categories' => EnumOptions::from(
+                DestinationCategory::class,
+            ),
 
-            'statuses' => DestinationStatus::options(),
-
+            'statuses' => EnumOptions::from(
+                DestinationStatus::class,
+            ),
         ]);
     }
 

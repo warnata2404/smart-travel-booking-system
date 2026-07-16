@@ -1,19 +1,26 @@
 <script setup>
 import { Head, Link, router } from "@inertiajs/vue3";
+
 import MainLayout from "@/Layouts/MainLayout.vue";
 
-import Card from "primevue/card";
+import AppPageHeader from "@/Components/Page/AppPageHeader.vue";
+import AppPageToolbar from "@/Components/Page/AppPageToolbar.vue";
+import AppPageCard from "@/Components/Page/AppPageCard.vue";
+
+import AppDataTable from "@/Components/Table/AppDataTable.vue";
+import AppStatusTag from "@/Components/Table/AppStatusTag.vue";
+
 import Button from "primevue/button";
-import DataTable from "primevue/datatable";
 import Column from "primevue/column";
 import Tag from "primevue/tag";
+
 import { useConfirm } from "primevue/useconfirm";
 
 defineOptions({
     layout: MainLayout,
 });
 
-const props = defineProps({
+defineProps({
     destinations: {
         type: Array,
         required: true,
@@ -27,6 +34,7 @@ function deleteDestination(destination) {
         header: "Delete Destination",
         message: `Are you sure you want to delete "${destination.name}"?`,
         icon: "pi pi-exclamation-triangle",
+
         acceptClass: "p-button-danger",
 
         accept: () => {
@@ -43,12 +51,17 @@ function formatCurrency(value) {
     }).format(value);
 }
 
-function statusSeverity(status) {
-    return status === "ACTIVE" ? "success" : "danger";
-}
-
 function categorySeverity(category) {
-    return category === "INDOOR" ? "info" : "warning";
+    switch (category) {
+        case "INDOOR":
+            return "info";
+
+        case "OUTDOOR":
+            return "warning";
+
+        default:
+            return "secondary";
+    }
 }
 </script>
 
@@ -56,91 +69,87 @@ function categorySeverity(category) {
     <Head title="Destinations" />
 
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-semibold">Destination Management</h1>
-
-                <p class="mt-1 text-gray-500">Manage travel destinations.</p>
-            </div>
-
-            <Link :href="route('destinations.create')">
-                <Button label="Add Destination" icon="pi pi-plus" />
-            </Link>
-        </div>
-
-        <Card>
-            <template #content>
-                <DataTable
-                    :value="destinations"
-                    paginator
-                    :rows="10"
-                    stripedRows
-                    responsiveLayout="scroll"
-                >
-                    <Column field="name" header="Destination" />
-
-                    <Column header="City">
-                        <template #body="{ data }">
-                            {{ data.city.name }}
-                        </template>
-                    </Column>
-
-                    <Column header="Category">
-                        <template #body="{ data }">
-                            <Tag
-                                :value="data.category"
-                                :severity="categorySeverity(data.category)"
-                            />
-                        </template>
-                    </Column>
-
-                    <Column header="Price">
-                        <template #body="{ data }">
-                            {{ formatCurrency(data.price) }}
-                        </template>
-                    </Column>
-
-                    <Column header="Distance">
-                        <template #body="{ data }">
-                            {{ data.distance }} km
-                        </template>
-                    </Column>
-
-                    <Column header="Duration">
-                        <template #body="{ data }">
-                            {{ data.estimated_duration }} minutes
-                        </template>
-                    </Column>
-
-                    <Column header="Status">
-                        <template #body="{ data }">
-                            <Tag
-                                :value="data.status"
-                                :severity="statusSeverity(data.status)"
-                            />
-                        </template>
-                    </Column>
-
-                    <Column header="Action" style="width: 180px">
-                        <template #body="{ data }">
-                            <div class="flex gap-2">
-                                <Link
-                                    :href="route('destinations.edit', data.id)"
-                                >
-                                    <Button icon="pi pi-pencil" outlined />
-                                </Link>
-
-                                <Button
-                                    icon="pi pi-trash"
-                                    severity="danger"
-                                    outlined
-                                    @click="deleteDestination(data)"
-                                />
-                            </div>
-                        </template>
-                    </Column>
-                </DataTable>
+        <AppPageHeader
+            title="Destination Management"
+            description="Manage travel destinations."
+        >
+            <template #actions>
+                <AppPageToolbar>
+                    <Link :href="route('destinations.create')">
+                        <Button label="Add Destination" icon="pi pi-plus" />
+                    </Link>
+                </AppPageToolbar>
             </template>
-        </Card>
+        </AppPageHeader>
+
+        <AppPageCard>
+            <AppDataTable
+                :value="destinations"
+                emptyMessage="No destinations found."
+            >
+                <Column field="name" header="Destination" sortable />
+
+                <Column header="City" sortable>
+                    <template #body="{ data }">
+                        {{ data.city.name }}
+                    </template>
+                </Column>
+
+                <Column header="Category" style="width: 140px">
+                    <template #body="{ data }">
+                        <Tag
+                            :value="data.category"
+                            :severity="categorySeverity(data.category)"
+                        />
+                    </template>
+                </Column>
+
+                <Column header="Price" sortable>
+                    <template #body="{ data }">
+                        {{ formatCurrency(data.price) }}
+                    </template>
+                </Column>
+
+                <Column header="Distance" sortable>
+                    <template #body="{ data }">
+                        {{ data.distance }} km
+                    </template>
+                </Column>
+
+                <Column header="Duration" sortable>
+                    <template #body="{ data }">
+                        {{ data.estimated_duration }}
+                        minutes
+                    </template>
+                </Column>
+
+                <Column header="Status" style="width: 140px">
+                    <template #body="{ data }">
+                        <AppStatusTag :status="data.status" />
+                    </template>
+                </Column>
+
+                <Column header="Actions" style="width: 170px">
+                    <template #body="{ data }">
+                        <div class="flex items-center gap-2">
+                            <Link :href="route('destinations.edit', data.id)">
+                                <Button
+                                    icon="pi pi-pencil"
+                                    severity="warning"
+                                    outlined
+                                />
+                            </Link>
+
+                            <Button
+                                icon="pi pi-trash"
+                                severity="danger"
+                                outlined
+                                @click="deleteDestination(data)"
+                            />
+                        </div>
+                    </template>
+                </Column>
+            </AppDataTable>
+        </AppPageCard>
     </div>
 </template>

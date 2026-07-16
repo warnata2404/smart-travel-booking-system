@@ -1,19 +1,25 @@
 <script setup>
 import { Head, Link, router } from "@inertiajs/vue3";
+
 import MainLayout from "@/Layouts/MainLayout.vue";
 
-import Card from "primevue/card";
+import AppPageHeader from "@/Components/Page/AppPageHeader.vue";
+import AppPageToolbar from "@/Components/Page/AppPageToolbar.vue";
+import AppPageCard from "@/Components/Page/AppPageCard.vue";
+
+import AppDataTable from "@/Components/Table/AppDataTable.vue";
+import AppStatusTag from "@/Components/Table/AppStatusTag.vue";
+
 import Button from "primevue/button";
-import DataTable from "primevue/datatable";
 import Column from "primevue/column";
-import Tag from "primevue/tag";
+
 import { useConfirm } from "primevue/useconfirm";
 
 defineOptions({
     layout: MainLayout,
 });
 
-const props = defineProps({
+defineProps({
     rewardConfigurations: {
         type: Array,
         required: true,
@@ -22,22 +28,22 @@ const props = defineProps({
 
 const confirm = useConfirm();
 
-function statusSeverity(status) {
-    return status === "ACTIVE" ? "success" : "danger";
-}
-
 function formatDiscount(value) {
     return `${Number(value)} %`;
 }
 
-function confirmDelete(id) {
+function deleteRewardConfiguration(rewardConfiguration) {
     confirm.require({
-        message: "Are you sure you want to delete this reward configuration?",
-        header: "Delete Confirmation",
+        header: "Delete Reward Configuration",
+        message: `Are you sure you want to delete "${rewardConfiguration.reward_name}"?`,
         icon: "pi pi-exclamation-triangle",
 
+        acceptClass: "p-button-danger",
+
         accept: () => {
-            router.delete(route("reward-configurations.destroy", id));
+            router.delete(
+                route("reward-configurations.destroy", rewardConfiguration.id),
+            );
         },
     });
 }
@@ -47,78 +53,72 @@ function confirmDelete(id) {
     <Head title="Reward Configurations" />
 
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-semibold">
-                    Reward Configuration Management
-                </h1>
-
-                <p class="mt-1 text-gray-500">
-                    Manage reward configuration based on travel distance.
-                </p>
-            </div>
-
-            <Link :href="route('reward-configurations.create')">
-                <Button label="Add Reward Configuration" icon="pi pi-plus" />
-            </Link>
-        </div>
-
-        <Card>
-            <template #content>
-                <DataTable
-                    :value="rewardConfigurations"
-                    paginator
-                    :rows="10"
-                    stripedRows
-                    responsiveLayout="scroll"
-                >
-                    <Column
-                        field="minimum_distance"
-                        header="Minimum Distance (km)"
-                    />
-
-                    <Column field="reward_name" header="Reward Name" />
-
-                    <Column header="Discount">
-                        <template #body="{ data }">
-                            {{ formatDiscount(data.discount_percentage) }}
-                        </template>
-                    </Column>
-
-                    <Column header="Status">
-                        <template #body="{ data }">
-                            <Tag
-                                :value="data.status"
-                                :severity="statusSeverity(data.status)"
-                            />
-                        </template>
-                    </Column>
-
-                    <Column header="Action" style="width: 180px">
-                        <template #body="{ data }">
-                            <div class="flex gap-2">
-                                <Link
-                                    :href="
-                                        route(
-                                            'reward-configurations.edit',
-                                            data.id,
-                                        )
-                                    "
-                                >
-                                    <Button icon="pi pi-pencil" outlined />
-                                </Link>
-
-                                <Button
-                                    icon="pi pi-trash"
-                                    severity="danger"
-                                    outlined
-                                    @click="confirmDelete(data.id)"
-                                />
-                            </div>
-                        </template>
-                    </Column>
-                </DataTable>
+        <AppPageHeader
+            title="Reward Configuration Management"
+            description="Manage reward configuration based on travel distance."
+        >
+            <template #actions>
+                <AppPageToolbar>
+                    <Link :href="route('reward-configurations.create')">
+                        <Button
+                            label="Add Reward Configuration"
+                            icon="pi pi-plus"
+                        />
+                    </Link>
+                </AppPageToolbar>
             </template>
-        </Card>
+        </AppPageHeader>
+
+        <AppPageCard>
+            <AppDataTable
+                :value="rewardConfigurations"
+                emptyMessage="No reward configurations found."
+            >
+                <Column
+                    field="minimum_distance"
+                    header="Minimum Distance (km)"
+                    sortable
+                />
+
+                <Column field="reward_name" header="Reward Name" sortable />
+
+                <Column header="Discount" sortable>
+                    <template #body="{ data }">
+                        {{ formatDiscount(data.discount_percentage) }}
+                    </template>
+                </Column>
+
+                <Column header="Status" style="width: 140px">
+                    <template #body="{ data }">
+                        <AppStatusTag :status="data.status" />
+                    </template>
+                </Column>
+
+                <Column header="Actions" style="width: 170px">
+                    <template #body="{ data }">
+                        <div class="flex items-center gap-2">
+                            <Link
+                                :href="
+                                    route('reward-configurations.edit', data.id)
+                                "
+                            >
+                                <Button
+                                    icon="pi pi-pencil"
+                                    severity="warning"
+                                    outlined
+                                />
+                            </Link>
+
+                            <Button
+                                icon="pi pi-trash"
+                                severity="danger"
+                                outlined
+                                @click="deleteRewardConfiguration(data)"
+                            />
+                        </div>
+                    </template>
+                </Column>
+            </AppDataTable>
+        </AppPageCard>
     </div>
 </template>

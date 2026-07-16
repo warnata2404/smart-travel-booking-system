@@ -1,14 +1,21 @@
 <script setup>
 import { Head, Link, useForm } from "@inertiajs/vue3";
+
 import MainLayout from "@/Layouts/MainLayout.vue";
 
-import Card from "primevue/card";
+import AppPageHeader from "@/Components/Page/AppPageHeader.vue";
+import AppPageToolbar from "@/Components/Page/AppPageToolbar.vue";
+import AppPageCard from "@/Components/Page/AppPageCard.vue";
+
+import AppFormSection from "@/Components/Form/AppFormSection.vue";
+import AppFormField from "@/Components/Form/AppFormField.vue";
+import AppFormActions from "@/Components/Form/AppFormActions.vue";
+
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
+import InputNumber from "primevue/inputnumber";
 import Textarea from "primevue/textarea";
 import Select from "primevue/select";
-import InputNumber from "primevue/inputnumber";
-import Message from "primevue/message";
 
 defineOptions({
     layout: MainLayout,
@@ -56,200 +63,137 @@ function submit() {
     <Head title="Edit Destination" />
 
     <div class="space-y-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-semibold">Edit Destination</h1>
+        <AppPageHeader
+            title="Edit Destination"
+            description="Update destination information."
+        >
+            <template #actions>
+                <AppPageToolbar>
+                    <Link :href="route('destinations.index')">
+                        <Button label="Back" icon="pi pi-arrow-left" outlined />
+                    </Link>
+                </AppPageToolbar>
+            </template>
+        </AppPageHeader>
 
-                <p class="mt-1 text-gray-500">
-                    Update destination information.
-                </p>
-            </div>
-
-            <Link :href="route('destinations.index')">
-                <Button label="Back" icon="pi pi-arrow-left" outlined />
-            </Link>
-        </div>
-
-        <Card>
-            <template #content>
-                <form class="space-y-6" @submit.prevent="submit">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label>City</label>
-
+        <AppPageCard>
+            <form @submit.prevent="submit">
+                <AppFormSection
+                    title="Destination Information"
+                    description="Update the destination information below."
+                >
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <AppFormField
+                            label="City"
+                            :error="form.errors.city_id"
+                            required
+                        >
                             <Select
                                 v-model="form.city_id"
                                 :options="cities"
                                 optionLabel="name"
                                 optionValue="id"
-                                class="w-full"
+                                fluid
                             />
+                        </AppFormField>
 
-                            <Message
-                                v-if="form.errors.city_id"
-                                severity="error"
-                                size="small"
-                                variant="simple"
-                            >
-                                {{ form.errors.city_id }}
-                            </Message>
-                        </div>
+                        <AppFormField
+                            label="Destination Name"
+                            :error="form.errors.name"
+                            required
+                        >
+                            <InputText v-model="form.name" fluid />
+                        </AppFormField>
 
-                        <div class="space-y-2">
-                            <label>Destination Name</label>
-
-                            <InputText v-model="form.name" class="w-full" />
-
-                            <Message
-                                v-if="form.errors.name"
-                                severity="error"
-                                size="small"
-                                variant="simple"
-                            >
-                                {{ form.errors.name }}
-                            </Message>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label>Category</label>
-
+                        <AppFormField
+                            label="Category"
+                            :error="form.errors.category"
+                            required
+                        >
                             <Select
                                 v-model="form.category"
                                 :options="categories"
                                 optionLabel="label"
                                 optionValue="value"
-                                class="w-full"
+                                fluid
                             />
+                        </AppFormField>
 
-                            <Message
-                                v-if="form.errors.category"
-                                severity="error"
-                                size="small"
-                                variant="simple"
-                            >
-                                {{ form.errors.category }}
-                            </Message>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label>Price</label>
-
+                        <AppFormField
+                            label="Price"
+                            :error="form.errors.price"
+                            required
+                        >
                             <InputNumber
                                 v-model="form.price"
                                 mode="currency"
                                 currency="IDR"
                                 locale="id-ID"
-                                class="w-full"
+                                fluid
                             />
+                        </AppFormField>
 
-                            <Message
-                                v-if="form.errors.price"
-                                severity="error"
-                                size="small"
-                                variant="simple"
-                            >
-                                {{ form.errors.price }}
-                            </Message>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label>Distance (km)</label>
-
+                        <AppFormField
+                            label="Distance (km)"
+                            :error="form.errors.distance"
+                            required
+                        >
                             <InputNumber
                                 v-model="form.distance"
                                 :minFractionDigits="2"
                                 :maxFractionDigits="2"
-                                class="w-full"
+                                fluid
                             />
+                        </AppFormField>
 
-                            <Message
-                                v-if="form.errors.distance"
-                                severity="error"
-                                size="small"
-                                variant="simple"
-                            >
-                                {{ form.errors.distance }}
-                            </Message>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label>Estimated Duration (minutes)</label>
-
+                        <AppFormField
+                            label="Estimated Duration (minutes)"
+                            :error="form.errors.estimated_duration"
+                            required
+                        >
                             <InputNumber
                                 v-model="form.estimated_duration"
                                 :min="1"
-                                class="w-full"
+                                fluid
                             />
-
-                            <Message
-                                v-if="form.errors.estimated_duration"
-                                severity="error"
-                                size="small"
-                                variant="simple"
-                            >
-                                {{ form.errors.estimated_duration }}
-                            </Message>
-                        </div>
+                        </AppFormField>
                     </div>
 
-                    <div class="space-y-2">
-                        <label>Description</label>
+                    <AppFormField
+                        label="Description"
+                        :error="form.errors.description"
+                    >
+                        <Textarea v-model="form.description" rows="4" fluid />
+                    </AppFormField>
 
-                        <Textarea
-                            v-model="form.description"
-                            rows="4"
-                            class="w-full"
-                        />
-
-                        <Message
-                            v-if="form.errors.description"
-                            severity="error"
-                            size="small"
-                            variant="simple"
-                        >
-                            {{ form.errors.description }}
-                        </Message>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label>Status</label>
-
+                    <AppFormField
+                        label="Status"
+                        :error="form.errors.status"
+                        required
+                    >
                         <Select
                             v-model="form.status"
                             :options="statuses"
                             optionLabel="label"
                             optionValue="value"
-                            class="w-full"
+                            fluid
                         />
+                    </AppFormField>
+                </AppFormSection>
 
-                        <Message
-                            v-if="form.errors.status"
-                            severity="error"
-                            size="small"
-                            variant="simple"
-                        >
-                            {{ form.errors.status }}
-                        </Message>
-                    </div>
+                <AppFormActions>
+                    <Link :href="route('destinations.index')">
+                        <Button label="Cancel" severity="secondary" outlined />
+                    </Link>
 
-                    <div class="flex justify-end gap-3">
-                        <Link :href="route('destinations.index')">
-                            <Button
-                                label="Cancel"
-                                severity="secondary"
-                                outlined
-                            />
-                        </Link>
-
-                        <Button
-                            type="submit"
-                            label="Update"
-                            icon="pi pi-save"
-                            :loading="form.processing"
-                        />
-                    </div>
-                </form>
-            </template>
-        </Card>
+                    <Button
+                        type="submit"
+                        label="Update"
+                        icon="pi pi-save"
+                        :loading="form.processing"
+                    />
+                </AppFormActions>
+            </form>
+        </AppPageCard>
     </div>
 </template>

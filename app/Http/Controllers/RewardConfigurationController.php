@@ -9,6 +9,7 @@ use App\Http\Requests\StoreRewardConfigurationRequest;
 use App\Http\Requests\UpdateRewardConfigurationRequest;
 use App\Models\RewardConfiguration;
 use App\Services\RewardConfigurationService;
+use App\Support\EnumOptions;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -35,7 +36,9 @@ class RewardConfigurationController extends Controller
     public function create(): Response
     {
         return Inertia::render('RewardConfigurations/Create', [
-            'statuses' => RewardConfigurationStatus::options(),
+            'statuses' => EnumOptions::from(
+                RewardConfigurationStatus::class,
+            ),
         ]);
     }
 
@@ -66,12 +69,12 @@ class RewardConfigurationController extends Controller
     ): Response {
 
         return Inertia::render('RewardConfigurations/Edit', [
-
             'rewardConfiguration' => $this->rewardConfigurationService
                 ->getById($rewardConfiguration->id),
 
-            'statuses' => RewardConfigurationStatus::options(),
-
+            'statuses' => EnumOptions::from(
+                RewardConfigurationStatus::class,
+            ),
         ]);
     }
 
