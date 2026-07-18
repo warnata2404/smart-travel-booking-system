@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\RewardConfigurationStatus;
+use App\Enums\TravelRouteStatus;
 use App\Enums\WeatherConfigurationStatus;
 use App\Models\City;
-use App\Models\Destination;
 use App\Models\RewardConfiguration;
+use App\Models\TravelRoute;
 use App\Models\WeatherConfiguration;
 
 class TravelAnalysisService
@@ -25,20 +26,36 @@ class TravelAnalysisService
         $originCity = City::query()
             ->findOrFail($data['origin_city_id']);
 
-        $destination = Destination::query()
-            ->with('city')
-            ->findOrFail($data['destination_id']);
+        /*
+        |--------------------------------------------------------------------------
+        | Travel Route
+        |--------------------------------------------------------------------------
+        */
+
+        $travelRoute = TravelRoute::query()
+            ->with([
+                'originCity',
+                'destination',
+                'destination.city',
+            ])
+            ->where(
+                'origin_city_id',
+                $data['origin_city_id'],
+            )
+            ->where(
+                'destination_id',
+                $data['destination_id'],
+            )
+            ->where(
+                'status',
+                TravelRouteStatus::ACTIVE,
+            )
+            ->firstOrFail();
 
         /*
         |--------------------------------------------------------------------------
         | Weather Configuration
         |--------------------------------------------------------------------------
-        |
-        | The application is not yet integrated with a Weather API.
-        | Therefore, the active weather configuration is used as the
-        | recommendation source. This query can be replaced later with
-        | actual weather analysis.
-        |
         */
 
         $weatherConfiguration = WeatherConfiguration::query()
@@ -52,7 +69,14 @@ class TravelAnalysisService
         |--------------------------------------------------------------------------
         | Reward Configuration
         |--------------------------------------------------------------------------
+        |
+        | Reward thresholds are stored as integers (kilometers), while travel
+        | routes store distance as decimal values. Convert the travel distance
+        | to an integer before comparing it with the reward configuration.
+        |
         */
+
+        $travelDistance = (int) floor((float) $travelRoute->distance);
 
         $rewardConfiguration = RewardConfiguration::query()
             ->where(
@@ -62,31 +86,36 @@ class TravelAnalysisService
             ->where(
                 'minimum_distance',
                 '<=',
-                $destination->distance,
+                $travelDistance,
             )
             ->orderByDesc('minimum_distance')
             ->first();
 
         return [
-            'origin_city_id' => $originCity->id,
 
-            'origin_city' => $originCity->name,
+            'travel_route_id' => $travelRoute->id,
 
-            'destination_id' => $destination->id,
+            'origin_city_id' => $travelRoute->origin_city_id,
 
-            'destination' => $destination->name,
+            'origin_city' => $travelRoute->originCity->name,
 
-            'destination_city' => $destination->city->name,
+            'destination_id' => $travelRoute->destination_id,
+
+            'destination' => $travelRoute->destination->name,
+
+            'destination_city' => $travelRoute->destination->city->name,
+
+            'destination_category' => $travelRoute->destination->category,
 
             'departure_date' => $data['departure_date'],
 
             'departure_time' => $data['departure_time'],
 
-            'distance' => $destination->distance,
+            'distance' => $travelRoute->distance,
 
-            'estimated_duration' => $destination->estimated_duration,
+            'estimated_duration' => $travelRoute->estimated_duration,
 
-            'price' => $destination->price,
+            'price' => $travelRoute->base_price,
 
             'weather' => $weatherConfiguration?->weather,
 
@@ -95,6 +124,7 @@ class TravelAnalysisService
             'reward' => $rewardConfiguration?->reward_name,
 
             'discount_percentage' => $rewardConfiguration?->discount_percentage,
+
         ];
     }
 }

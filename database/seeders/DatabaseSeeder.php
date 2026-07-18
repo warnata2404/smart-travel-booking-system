@@ -14,11 +14,39 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+
+            /*
+            |--------------------------------------------------------------------------
+            | Users
+            |--------------------------------------------------------------------------
+            */
+
             AdminUserSeeder::class,
+
+            CustomerUserSeeder::class,
+
+            /*
+            |--------------------------------------------------------------------------
+            | Master Data
+            |--------------------------------------------------------------------------
+            */
+
             CitySeeder::class,
+
             DestinationSeeder::class,
+
+            TravelRouteSeeder::class,
+
+            /*
+            |--------------------------------------------------------------------------
+            | Configuration
+            |--------------------------------------------------------------------------
+            */
+
             RewardConfigurationSeeder::class,
+
             WeatherConfigurationSeeder::class,
+
         ]);
     }
 }

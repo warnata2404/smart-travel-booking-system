@@ -6,10 +6,12 @@ namespace App\Services;
 
 use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\TripStatus;
 use App\Enums\UserRole;
 use App\Enums\VoucherStatus;
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Models\Trip;
 use App\Models\Voucher;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -156,10 +158,10 @@ class PaymentService
         return DB::transaction(function () use ($data): Payment {
 
             /*
-            |--------------------------------------------------------------------------
-            | Booking
-            |--------------------------------------------------------------------------
-            */
+        |--------------------------------------------------------------------------
+        | Booking
+        |--------------------------------------------------------------------------
+        */
 
             $booking = Booking::query()
                 ->findOrFail($data['booking_id']);
@@ -169,10 +171,10 @@ class PaymentService
             }
 
             /*
-            |--------------------------------------------------------------------------
-            | Customer can only pay own booking
-            |--------------------------------------------------------------------------
-            */
+        |--------------------------------------------------------------------------
+        | Customer can only pay own booking
+        |--------------------------------------------------------------------------
+        */
 
             if (
                 Auth::user()?->role === UserRole::CUSTOMER &&
@@ -182,26 +184,42 @@ class PaymentService
             }
 
             /*
-            |--------------------------------------------------------------------------
-            | Voucher (Optional)
-            |--------------------------------------------------------------------------
-            */
+        |--------------------------------------------------------------------------
+        | Voucher (Optional)
+        |--------------------------------------------------------------------------
+        */
 
             $voucher = null;
             $discount = 0;
 
             if (!empty($data['voucher_id'])) {
 
-                $voucher = Voucher::query()
-                    ->findOrFail($data['voucher_id']);
+                $voucherQuery = Voucher::query()
+                    ->with('reward')
+                    ->whereKey($data['voucher_id'])
+                    ->where(
+                        'status',
+                        VoucherStatus::ACTIVE,
+                    )
+                    ->where(
+                        'expired_at',
+                        '>',
+                        now(),
+                    );
 
-                if ($voucher->status !== VoucherStatus::ACTIVE) {
-                    abort(422, 'Voucher is not available.');
+                if (Auth::user()?->role === UserRole::CUSTOMER) {
+                    $voucherQuery->whereHas(
+                        'reward',
+                        function ($query): void {
+                            $query->where(
+                                'customer_id',
+                                Auth::id(),
+                            );
+                        },
+                    );
                 }
 
-                if ($voucher->expired_at->isPast()) {
-                    abort(422, 'Voucher has expired.');
-                }
+                $voucher = $voucherQuery->firstOrFail();
 
                 $discount = round(
                     $booking->price * ($voucher->discount_percentage / 100),
@@ -210,10 +228,10 @@ class PaymentService
             }
 
             /*
-            |--------------------------------------------------------------------------
-            | Payment Calculation
-            |--------------------------------------------------------------------------
-            */
+        |--------------------------------------------------------------------------
+        | Payment Calculation
+        |--------------------------------------------------------------------------
+        */
 
             $subtotal = $booking->price;
 
@@ -223,21 +241,15 @@ class PaymentService
             );
 
             /*
-            |--------------------------------------------------------------------------
-            | Upload Payment Proof
-            |--------------------------------------------------------------------------
-            */
+        |--------------------------------------------------------------------------
+        | Upload Payment Proof
+        |--------------------------------------------------------------------------
+        */
 
             $paymentProof = $data['payment_proof']->store(
                 'payments',
                 'public',
             );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Create Payment
-            |--------------------------------------------------------------------------
-            */
 
             $payment = Payment::query()->create([
                 'payment_number' => $this->generatePaymentNumber(),
@@ -259,27 +271,26 @@ class PaymentService
                 'paid_at' => now(),
             ]);
 
-            /*
-            |--------------------------------------------------------------------------
-            | Update Booking
-            |--------------------------------------------------------------------------
-            */
 
-            $booking->update([
-                'status' => BookingStatus::CONFIRMED,
-            ]);
-
-            /*
-            |--------------------------------------------------------------------------
-            | Update Voucher
-            |--------------------------------------------------------------------------
-            */
 
             if ($voucher !== null) {
                 $voucher->update([
                     'status' => VoucherStatus::USED,
                 ]);
             }
+
+            $booking->update([
+                'status' => BookingStatus::CONFIRMED,
+            ]);
+
+            Trip::query()->firstOrCreate(
+                [
+                    'booking_id' => $booking->id,
+                ],
+                [
+                    'status' => TripStatus::NOT_STARTED,
+                ],
+            );
 
             return $payment;
         });
@@ -298,7 +309,10 @@ class PaymentService
             );
         } while (
             Payment::query()
-            ->where('payment_number', $paymentNumber)
+            ->where(
+                'payment_number',
+                $paymentNumber,
+            )
             ->exists()
         );
 

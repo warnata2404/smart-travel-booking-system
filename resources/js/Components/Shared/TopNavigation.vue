@@ -1,61 +1,87 @@
 <script setup>
-import { computed } from "vue";
-import { Link, usePage } from "@inertiajs/vue3";
+import { computed, ref } from "vue";
+import { Link, usePage, router } from "@inertiajs/vue3";
 
 import Avatar from "primevue/avatar";
-import Tag from "primevue/tag";
+import Button from "primevue/button";
+import Menu from "primevue/menu";
 
 const page = usePage();
 
-const user = computed(() => page.props.auth.user);
-
-const roleLabel = computed(() => {
-    return user.value?.role === "ADMIN" ? "Administrator" : "Customer";
-});
+const user = computed(() => page.props.auth?.user ?? null);
 
 const avatarLabel = computed(() => {
-    return user.value?.name?.charAt(0)?.toUpperCase();
+    return user.value?.name?.charAt(0)?.toUpperCase() ?? "?";
 });
+
+const roleLabel = computed(() => {
+    return user.value?.role === "ADMIN" ? "System Administrator" : "Customer";
+});
+
+const menu = ref();
+
+const menuItems = [
+    {
+        label: "Profile",
+        icon: "pi pi-user",
+        command: () => {
+            router.visit("/profile");
+        },
+    },
+    {
+        separator: true,
+    },
+    {
+        label: "Logout",
+        icon: "pi pi-sign-out",
+        command: () => {
+            router.post("/logout");
+        },
+    },
+];
+
+const toggleMenu = (event) => {
+    menu.value.toggle(event);
+};
 </script>
 
 <template>
     <header
-        class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 bg-white px-6 py-4"
+        class="flex items-center justify-between border-b border-slate-200 bg-white px-8 py-5 shadow-sm"
     >
+        <!-- Page Title -->
         <div>
-            <h1 class="text-xl font-semibold text-gray-900">
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">
                 Smart Travel Booking System
             </h1>
 
-            <p class="text-sm text-gray-500">Travel Management Platform</p>
+            <p class="mt-1 text-sm text-slate-500">
+                Travel Management Platform
+            </p>
         </div>
 
+        <!-- User -->
         <div class="flex items-center gap-4">
-            <Avatar :label="avatarLabel" shape="circle" size="large" />
-
-            <div class="hidden text-right md:block">
-                <div class="font-semibold text-gray-900">
+            <div class="hidden text-right lg:block">
+                <div class="font-semibold text-slate-900">
                     {{ user?.name }}
                 </div>
 
-                <Tag :value="roleLabel" severity="contrast" />
+                <div class="text-sm text-slate-500">
+                    {{ roleLabel }}
+                </div>
             </div>
 
-            <Link
-                href="/profile"
-                class="text-gray-600 transition-colors hover:text-primary"
-            >
-                <i class="pi pi-user text-xl"></i>
-            </Link>
+            <Button text rounded class="!p-1" @click="toggleMenu">
+                <Avatar
+                    :label="avatarLabel"
+                    shape="circle"
+                    size="large"
+                    class="bg-primary text-white shadow-sm"
+                />
+            </Button>
 
-            <Link
-                href="/logout"
-                method="post"
-                as="button"
-                class="text-red-600 transition-colors hover:text-red-700"
-            >
-                <i class="pi pi-sign-out text-xl"></i>
-            </Link>
+            <Menu ref="menu" :model="menuItems" popup />
         </div>
     </header>
 </template>

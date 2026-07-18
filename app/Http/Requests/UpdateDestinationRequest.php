@@ -8,8 +8,8 @@ use App\Enums\DestinationCategory;
 use App\Enums\DestinationStatus;
 use App\Enums\UserRole;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class UpdateDestinationRequest extends FormRequest
 {
@@ -55,24 +55,6 @@ class UpdateDestinationRequest extends FormRequest
                 Rule::enum(DestinationCategory::class),
             ],
 
-            'price' => [
-                'required',
-                'numeric',
-                'min:0',
-            ],
-
-            'distance' => [
-                'required',
-                'numeric',
-                'min:0',
-            ],
-
-            'estimated_duration' => [
-                'required',
-                'integer',
-                'min:1',
-            ],
-
             'description' => [
                 'nullable',
                 'string',
@@ -105,18 +87,6 @@ class UpdateDestinationRequest extends FormRequest
             'category.required' => 'Category is required.',
             'category.enum' => 'Selected category is invalid.',
 
-            'price.required' => 'Price is required.',
-            'price.numeric' => 'Price must be a valid number.',
-            'price.min' => 'Price must be greater than or equal to 0.',
-
-            'distance.required' => 'Distance is required.',
-            'distance.numeric' => 'Distance must be a valid number.',
-            'distance.min' => 'Distance must be greater than or equal to 0.',
-
-            'estimated_duration.required' => 'Estimated duration is required.',
-            'estimated_duration.integer' => 'Estimated duration must be an integer.',
-            'estimated_duration.min' => 'Estimated duration must be at least 1 minute.',
-
             'description.string' => 'Description must be a valid text.',
 
             'status.required' => 'Status is required.',
@@ -135,9 +105,6 @@ class UpdateDestinationRequest extends FormRequest
             'city_id' => 'city',
             'name' => 'destination name',
             'category' => 'category',
-            'price' => 'price',
-            'distance' => 'distance',
-            'estimated_duration' => 'estimated duration',
             'description' => 'description',
             'status' => 'status',
         ];

@@ -1,6 +1,7 @@
 <script setup>
+import { Head, router } from "@inertiajs/vue3";
+
 import MainLayout from "@/Layouts/MainLayout.vue";
-import { Head } from "@inertiajs/vue3";
 
 import Card from "primevue/card";
 import Column from "primevue/column";
@@ -19,9 +20,21 @@ const props = defineProps({
     },
 });
 
-function viewTrip(id) {
-    window.location.href = route("trips.show", id);
+/*
+|--------------------------------------------------------------------------
+| Navigation
+|--------------------------------------------------------------------------
+*/
+
+function goToDetail(id) {
+    router.visit(route("trips.show", id));
 }
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
 
 function statusSeverity(status) {
     switch (status) {
@@ -39,12 +52,12 @@ function statusSeverity(status) {
     }
 }
 
-function formatDate(date) {
-    if (!date) {
+function formatDate(value) {
+    if (!value) {
         return "-";
     }
 
-    return new Date(date).toLocaleString("id-ID");
+    return new Date(value).toLocaleString("id-ID");
 }
 </script>
 
@@ -67,20 +80,44 @@ function formatDate(date) {
                     stripedRows
                     responsiveLayout="scroll"
                     dataKey="id"
+                    sortMode="single"
+                    removableSort
                 >
-                    <Column header="Booking">
+                    <template #empty> No trip data available. </template>
+
+                    <Column
+                        field="booking.booking_number"
+                        header="Booking"
+                        sortable
+                    >
                         <template #body="{ data }">
-                            {{ data.booking?.booking_number }}
+                            {{ data.booking?.booking_number ?? "-" }}
                         </template>
                     </Column>
 
-                    <Column header="Customer">
+                    <Column header="Customer" sortable>
                         <template #body="{ data }">
-                            {{ data.booking?.customer?.name }}
+                            {{ data.booking?.customer?.name ?? "-" }}
                         </template>
                     </Column>
 
-                    <Column header="Status">
+                    <Column header="Origin">
+                        <template #body="{ data }">
+                            {{
+                                data.booking?.originCity?.name ??
+                                data.booking?.origin_city?.name ??
+                                "-"
+                            }}
+                        </template>
+                    </Column>
+
+                    <Column header="Destination">
+                        <template #body="{ data }">
+                            {{ data.booking?.destination?.name ?? "-" }}
+                        </template>
+                    </Column>
+
+                    <Column field="status" header="Status" sortable>
                         <template #body="{ data }">
                             <Tag
                                 :value="data.status"
@@ -89,13 +126,13 @@ function formatDate(date) {
                         </template>
                     </Column>
 
-                    <Column header="Started">
+                    <Column field="started_at" header="Started" sortable>
                         <template #body="{ data }">
                             {{ formatDate(data.started_at) }}
                         </template>
                     </Column>
 
-                    <Column header="Completed">
+                    <Column field="completed_at" header="Completed" sortable>
                         <template #body="{ data }">
                             {{ formatDate(data.completed_at) }}
                         </template>
@@ -107,7 +144,7 @@ function formatDate(date) {
                                 label="Detail"
                                 icon="pi pi-eye"
                                 outlined
-                                @click="viewTrip(data.id)"
+                                @click="goToDetail(data.id)"
                             />
                         </template>
                     </Column>

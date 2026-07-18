@@ -100,6 +100,8 @@ class RewardService
             |--------------------------------------------------------------------------
             */
 
+            $travelDistance = (int) floor((float) $trip->booking->distance);
+
             $rewardConfiguration = RewardConfiguration::query()
                 ->where(
                     'status',
@@ -108,7 +110,7 @@ class RewardService
                 ->where(
                     'minimum_distance',
                     '<=',
-                    $trip->booking->distance,
+                    $travelDistance,
                 )
                 ->orderByDesc('minimum_distance')
                 ->firstOrFail();

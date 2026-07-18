@@ -31,8 +31,11 @@ const confirm = useConfirm();
 function deleteCity(city) {
     confirm.require({
         header: "Delete City",
-        message: `Are you sure you want to delete "${city.name}"?`,
+        message: `Are you sure you want to delete "${city.name}"? This action cannot be undone.`,
         icon: "pi pi-exclamation-triangle",
+
+        acceptLabel: "Delete",
+        rejectLabel: "Cancel",
 
         acceptClass: "p-button-danger",
 
@@ -48,11 +51,13 @@ function deleteCity(city) {
 
     <div class="space-y-6">
         <AppPageHeader
+            badge="Master Data"
+            icon="pi pi-map-marker"
             title="City Management"
-            description="Manage available cities."
+            description="Manage the cities used throughout the Smart Travel Booking System."
         >
             <template #actions>
-                <AppPageToolbar>
+                <AppPageToolbar background>
                     <Link :href="route('cities.create')">
                         <Button label="Add City" icon="pi pi-plus" />
                     </Link>
@@ -60,13 +65,19 @@ function deleteCity(city) {
             </template>
         </AppPageHeader>
 
-        <AppPageCard>
+        <AppPageCard title="Cities" subtitle="List of available cities.">
             <AppDataTable :value="cities" emptyMessage="No cities found.">
+                <Column header="#" style="width: 70px">
+                    <template #body="{ index }">
+                        {{ index + 1 }}
+                    </template>
+                </Column>
+
                 <Column field="name" header="City" sortable />
 
                 <Column field="description" header="Description" />
 
-                <Column header="Status" style="width: 140px">
+                <Column header="Status" style="width: 150px">
                     <template #body="{ data }">
                         <AppStatusTag :status="data.status" />
                     </template>
@@ -74,12 +85,16 @@ function deleteCity(city) {
 
                 <Column header="Actions" style="width: 170px">
                     <template #body="{ data }">
-                        <div class="flex items-center gap-2">
+                        <div
+                            class="flex items-center justify-center gap-2 whitespace-nowrap"
+                        >
                             <Link :href="route('cities.edit', data.id)">
                                 <Button
                                     icon="pi pi-pencil"
                                     severity="warning"
                                     outlined
+                                    rounded
+                                    v-tooltip.top="'Edit City'"
                                 />
                             </Link>
 
@@ -87,6 +102,8 @@ function deleteCity(city) {
                                 icon="pi pi-trash"
                                 severity="danger"
                                 outlined
+                                rounded
+                                v-tooltip.top="'Delete City'"
                                 @click="deleteCity(data)"
                             />
                         </div>

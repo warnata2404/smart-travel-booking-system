@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\DestinationCategory;
 use App\Enums\DestinationStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -20,15 +19,11 @@ return new class extends Migration
 
             $table->string('name', 100);
 
-            $table->string('category', 20)->index();
+            $table->string('category', 20)
+                ->index();
 
-            $table->decimal('price', 15, 2);
-
-            $table->decimal('distance', 10, 2);
-
-            $table->unsignedInteger('estimated_duration');
-
-            $table->text('description')->nullable();
+            $table->text('description')
+                ->nullable();
 
             $table->string('status', 20)
                 ->default(DestinationStatus::ACTIVE->value)

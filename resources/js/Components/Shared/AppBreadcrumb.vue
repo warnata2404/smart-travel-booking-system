@@ -47,7 +47,7 @@ const breadcrumbs = computed(() => {
                     labelMap[segment] ??
                     segment
                         .replace(/-/g, " ")
-                        .replace(/\b\w/g, (c) => c.toUpperCase()),
+                        .replace(/\b\w/g, (char) => char.toUpperCase()),
                 url: currentPath,
             };
         });
@@ -55,32 +55,40 @@ const breadcrumbs = computed(() => {
 </script>
 
 <template>
-    <nav
-        v-if="breadcrumbs.length"
-        aria-label="Breadcrumb"
-        class="mb-6 flex items-center gap-2 text-sm text-gray-500"
-    >
-        <Link href="/dashboard" class="transition-colors hover:text-primary">
-            Dashboard
-        </Link>
-
-        <template v-for="(item, index) in breadcrumbs" :key="item.url">
-            <i class="pi pi-angle-right text-xs"></i>
-
-            <span
-                v-if="index === breadcrumbs.length - 1"
-                class="font-medium text-gray-900"
-            >
-                {{ item.label }}
-            </span>
-
+    <nav v-if="breadcrumbs.length" aria-label="Breadcrumb" class="mb-6">
+        <div
+            class="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 shadow-sm"
+        >
+            <!-- Dashboard -->
             <Link
-                v-else
-                :href="item.url"
-                class="transition-colors hover:text-primary"
+                href="/dashboard"
+                class="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition-colors duration-200 hover:text-primary"
             >
-                {{ item.label }}
+                <i class="pi pi-home text-sm"></i>
+
+                <span>Dashboard</span>
             </Link>
-        </template>
+
+            <template v-for="(item, index) in breadcrumbs" :key="item.url">
+                <i class="pi pi-angle-right text-xs text-slate-400"></i>
+
+                <!-- Current Page -->
+                <span
+                    v-if="index === breadcrumbs.length - 1"
+                    class="text-sm font-semibold text-slate-900"
+                >
+                    {{ item.label }}
+                </span>
+
+                <!-- Parent -->
+                <Link
+                    v-else
+                    :href="item.url"
+                    class="text-sm font-medium text-slate-500 transition-colors duration-200 hover:text-primary"
+                >
+                    {{ item.label }}
+                </Link>
+            </template>
+        </div>
     </nav>
 </template>

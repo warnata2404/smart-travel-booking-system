@@ -26,9 +26,6 @@ class Destination extends Model
         'city_id',
         'name',
         'category',
-        'price',
-        'distance',
-        'estimated_duration',
         'description',
         'status',
     ];
@@ -42,9 +39,6 @@ class Destination extends Model
     {
         return [
             'category' => DestinationCategory::class,
-            'price' => 'decimal:2',
-            'distance' => 'decimal:2',
-            'estimated_duration' => 'integer',
             'status' => DestinationStatus::class,
             'deleted_at' => 'datetime',
         ];
@@ -56,6 +50,14 @@ class Destination extends Model
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class);
+    }
+
+    /**
+     * Travel routes for this destination.
+     */
+    public function travelRoutes(): HasMany
+    {
+        return $this->hasMany(TravelRoute::class);
     }
 
     /**

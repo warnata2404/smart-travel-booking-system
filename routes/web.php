@@ -10,7 +10,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RewardConfigurationController;
 use App\Http\Controllers\RewardController;
-use App\Http\Controllers\TravelAnalysisController;
+use App\Http\Controllers\TravelRouteController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\WeatherConfigurationController;
@@ -30,26 +30,10 @@ Route::redirect('/', '/dashboard');
 |--------------------------------------------------------------------------
 */
 
-Route::get('/dashboard', [
-    DashboardController::class,
-    'index',
-])
-    ->middleware([
-        'auth',
-        'verified',
-    ])
-    ->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
 
-/*
-|--------------------------------------------------------------------------
-| Authenticated Routes
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware([
-    'auth',
-    'verified',
-])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
 
     /*
     |--------------------------------------------------------------------------
@@ -57,20 +41,14 @@ Route::middleware([
     |--------------------------------------------------------------------------
     */
 
-    Route::get('/profile', [
-        ProfileController::class,
-        'edit',
-    ])->name('profile.edit');
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
 
-    Route::patch('/profile', [
-        ProfileController::class,
-        'update',
-    ])->name('profile.update');
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
 
-    Route::delete('/profile', [
-        ProfileController::class,
-        'destroy',
-    ])->name('profile.destroy');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
 
     /*
     |--------------------------------------------------------------------------
@@ -78,167 +56,105 @@ Route::middleware([
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware([
-        'admin',
-    ])->group(function () {
+    Route::middleware('admin')->group(function () {
 
-        /*
-        |--------------------------------------------------------------------------
-        | City
-        |--------------------------------------------------------------------------
-        */
+        Route::resource('cities', CityController::class)
+            ->except(['show']);
 
-        Route::resource(
-            'cities',
-            CityController::class,
-        )->except([
-            'show',
-        ]);
+        Route::resource('destinations', DestinationController::class)
+            ->except(['show']);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Destination
-        |--------------------------------------------------------------------------
-        */
+        Route::resource('travel-routes', TravelRouteController::class)
+            ->except(['show']);
 
-        Route::resource(
-            'destinations',
-            DestinationController::class,
-        )->except([
-            'show',
-        ]);
+        Route::resource('reward-configurations', RewardConfigurationController::class)
+            ->except(['show']);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Reward Configuration
-        |--------------------------------------------------------------------------
-        */
-
-        Route::resource(
-            'reward-configurations',
-            RewardConfigurationController::class,
-        )->except([
-            'show',
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Weather Configuration
-        |--------------------------------------------------------------------------
-        */
-
-        Route::resource(
-            'weather-configurations',
-            WeatherConfigurationController::class,
-        )->except([
-            'show',
-        ]);
+        Route::resource('weather-configurations', WeatherConfigurationController::class)
+            ->except(['show']);
     });
 
     /*
     |--------------------------------------------------------------------------
-    | Travel Analysis
+    | Bookings
     |--------------------------------------------------------------------------
     */
 
-    Route::prefix('travel-analysis')
-        ->name('travel-analysis.')
+    Route::prefix('bookings')
+        ->name('bookings.')
         ->group(function () {
 
-            Route::get('/', [
-                TravelAnalysisController::class,
-                'index',
-            ])->name('index');
+            Route::get('/', [BookingController::class, 'index'])
+                ->name('index');
 
-            Route::post('/analyze', [
-                TravelAnalysisController::class,
-                'analyze',
-            ])->name('analyze');
+            Route::get('/create', [BookingController::class, 'create'])
+                ->name('create');
+
+            Route::post('/review', [BookingController::class, 'review'])
+                ->name('review');
+
+            Route::post('/', [BookingController::class, 'store'])
+                ->name('store');
+
+            Route::get('/{booking}', [BookingController::class, 'show'])
+                ->name('show');
         });
 
     /*
     |--------------------------------------------------------------------------
-    | Booking
+    | Payments
     |--------------------------------------------------------------------------
     */
 
-    Route::resource(
-        'bookings',
-        BookingController::class,
-    )->only([
-        'index',
-        'create',
-        'store',
-        'show',
-    ]);
+    Route::resource('payments', PaymentController::class)
+        ->only([
+            'index',
+            'create',
+            'store',
+            'show',
+        ]);
 
     /*
     |--------------------------------------------------------------------------
-    | Payment
+    | Trips
     |--------------------------------------------------------------------------
     */
 
-    Route::resource(
-        'payments',
-        PaymentController::class,
-    )->only([
-        'index',
-        'create',
-        'store',
-        'show',
-    ]);
+    Route::resource('trips', TripController::class)
+        ->only([
+            'index',
+            'show',
+        ]);
+
+    Route::post('/trips/{trip}/start', [TripController::class, 'start'])
+        ->name('trips.start');
+
+    Route::post('/trips/{trip}/complete', [TripController::class, 'complete'])
+        ->name('trips.complete');
 
     /*
     |--------------------------------------------------------------------------
-    | Trip
+    | Rewards
     |--------------------------------------------------------------------------
     */
 
-    Route::resource(
-        'trips',
-        TripController::class,
-    )->only([
-        'index',
-        'show',
-    ]);
-
-    Route::post('/trips/{trip}/start', [
-        TripController::class,
-        'start',
-    ])->name('trips.start');
-
-    Route::post('/trips/{trip}/complete', [
-        TripController::class,
-        'complete',
-    ])->name('trips.complete');
+    Route::resource('rewards', RewardController::class)
+        ->only([
+            'index',
+            'show',
+        ]);
 
     /*
     |--------------------------------------------------------------------------
-    | Reward
+    | Vouchers
     |--------------------------------------------------------------------------
     */
 
-    Route::resource(
-        'rewards',
-        RewardController::class,
-    )->only([
-        'index',
-        'show',
-    ]);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Voucher
-    |--------------------------------------------------------------------------
-    */
-
-    Route::resource(
-        'vouchers',
-        VoucherController::class,
-    )->only([
-        'index',
-        'show',
-    ]);
+    Route::resource('vouchers', VoucherController::class)
+        ->only([
+            'index',
+            'show',
+        ]);
 });
 
 require __DIR__ . '/auth.php';

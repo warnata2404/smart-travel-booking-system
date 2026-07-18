@@ -46,4 +46,15 @@ class City extends Model
     {
         return $this->hasMany(Destination::class);
     }
+
+    /**
+     * Travel routes that originate from this city.
+     */
+    public function travelRoutes(): HasMany
+    {
+        return $this->hasMany(
+            TravelRoute::class,
+            'origin_city_id',
+        );
+    }
 }

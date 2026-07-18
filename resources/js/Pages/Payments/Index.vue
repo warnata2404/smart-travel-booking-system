@@ -1,6 +1,7 @@
 <script setup>
+import { Head, router } from "@inertiajs/vue3";
+
 import MainLayout from "@/Layouts/MainLayout.vue";
-import { Head } from "@inertiajs/vue3";
 
 import Card from "primevue/card";
 import Column from "primevue/column";
@@ -19,13 +20,25 @@ const props = defineProps({
     },
 });
 
-function viewPayment(id) {
-    window.location.href = route("payments.show", id);
+/*
+|--------------------------------------------------------------------------
+| Navigation
+|--------------------------------------------------------------------------
+*/
+
+function goToCreate() {
+    router.visit(route("payments.create"));
 }
 
-function createPayment() {
-    window.location.href = route("payments.create");
+function goToDetail(id) {
+    router.visit(route("payments.show", id));
 }
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
 
 function formatCurrency(value) {
     if (value === null || value === undefined) {
@@ -38,12 +51,12 @@ function formatCurrency(value) {
     }).format(value);
 }
 
-function formatDate(date) {
-    if (!date) {
+function formatDate(value) {
+    if (!value) {
         return "-";
     }
 
-    return new Date(date).toLocaleString("id-ID");
+    return new Date(value).toLocaleString("id-ID");
 }
 
 function statusSeverity(status) {
@@ -71,11 +84,7 @@ function statusSeverity(status) {
                 <p class="mt-1 text-gray-500">Manage booking payments.</p>
             </div>
 
-            <Button
-                label="New Payment"
-                icon="pi pi-plus"
-                @click="createPayment"
-            />
+            <Button label="New Payment" icon="pi pi-plus" @click="goToCreate" />
         </div>
 
         <Card>
@@ -87,32 +96,52 @@ function statusSeverity(status) {
                     stripedRows
                     responsiveLayout="scroll"
                     dataKey="id"
+                    sortMode="single"
+                    removableSort
                 >
-                    <Column header="Payment No">
+                    <template #empty> No payment data available. </template>
+
+                    <Column field="payment_number" header="Payment No" sortable>
                         <template #body="{ data }">
                             {{ data.payment_number }}
                         </template>
                     </Column>
 
-                    <Column header="Booking">
+                    <Column header="Booking" sortable>
                         <template #body="{ data }">
                             {{ data.booking?.booking_number ?? "-" }}
                         </template>
                     </Column>
 
-                    <Column header="Customer">
+                    <Column header="Customer" sortable>
                         <template #body="{ data }">
                             {{ data.booking?.customer?.name ?? "-" }}
                         </template>
                     </Column>
 
-                    <Column header="Grand Total">
+                    <Column header="Origin">
+                        <template #body="{ data }">
+                            {{
+                                data.booking?.originCity?.name ??
+                                data.booking?.origin_city?.name ??
+                                "-"
+                            }}
+                        </template>
+                    </Column>
+
+                    <Column header="Destination">
+                        <template #body="{ data }">
+                            {{ data.booking?.destination?.name ?? "-" }}
+                        </template>
+                    </Column>
+
+                    <Column field="grand_total" header="Grand Total" sortable>
                         <template #body="{ data }">
                             {{ formatCurrency(data.grand_total) }}
                         </template>
                     </Column>
 
-                    <Column header="Status">
+                    <Column field="status" header="Status" sortable>
                         <template #body="{ data }">
                             <Tag
                                 :value="data.status"
@@ -121,7 +150,7 @@ function statusSeverity(status) {
                         </template>
                     </Column>
 
-                    <Column header="Paid At">
+                    <Column field="paid_at" header="Paid At" sortable>
                         <template #body="{ data }">
                             {{ formatDate(data.paid_at) }}
                         </template>
@@ -133,7 +162,7 @@ function statusSeverity(status) {
                                 label="Detail"
                                 icon="pi pi-eye"
                                 outlined
-                                @click="viewPayment(data.id)"
+                                @click="goToDetail(data.id)"
                             />
                         </template>
                     </Column>

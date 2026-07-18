@@ -6,7 +6,7 @@ namespace App\Http\Requests;
 
 use App\Enums\UserRole;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class StoreBookingRequest extends FormRequest
 {
@@ -15,8 +15,7 @@ class StoreBookingRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return Auth::check()
-            && Auth::user()->role === UserRole::CUSTOMER;
+        return $this->user()?->role === UserRole::CUSTOMER;
     }
 
     /**
@@ -27,16 +26,11 @@ class StoreBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'origin_city_id' => [
-                'required',
-                'integer',
-                'exists:cities,id',
-            ],
 
-            'destination_id' => [
+            'travel_route_id' => [
                 'required',
                 'integer',
-                'exists:destinations,id',
+                Rule::exists('travel_routes', 'id'),
             ],
 
             'departure_date' => [
@@ -49,6 +43,7 @@ class StoreBookingRequest extends FormRequest
                 'required',
                 'date_format:H:i',
             ],
+
         ];
     }
 
@@ -60,20 +55,18 @@ class StoreBookingRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'origin_city_id.required' => 'Origin city is required.',
-            'origin_city_id.integer' => 'Origin city must be a valid selection.',
-            'origin_city_id.exists' => 'Selected origin city is invalid.',
 
-            'destination_id.required' => 'Destination is required.',
-            'destination_id.integer' => 'Destination must be a valid selection.',
-            'destination_id.exists' => 'Selected destination is invalid.',
+            'travel_route_id.required' => 'Travel route is required.',
+            'travel_route_id.integer' => 'Travel route must be a valid selection.',
+            'travel_route_id.exists' => 'Selected travel route is invalid.',
 
             'departure_date.required' => 'Departure date is required.',
             'departure_date.date' => 'Departure date is invalid.',
             'departure_date.after_or_equal' => 'Departure date cannot be earlier than today.',
 
             'departure_time.required' => 'Departure time is required.',
-            'departure_time.date_format' => 'Departure time must use HH:MM format.',
+            'departure_time.date_format' => 'Departure time must use HH:mm format.',
+
         ];
     }
 
@@ -85,10 +78,13 @@ class StoreBookingRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'origin_city_id' => 'origin city',
-            'destination_id' => 'destination',
+
+            'travel_route_id' => 'travel route',
+
             'departure_date' => 'departure date',
+
             'departure_time' => 'departure time',
+
         ];
     }
 }

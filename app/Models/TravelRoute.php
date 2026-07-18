@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\BookingStatus;
+use App\Enums\TravelRouteStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Booking extends Model
+class TravelRoute extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -20,16 +21,11 @@ class Booking extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'booking_number',
-        'customer_id',
-        'travel_route_id',
         'origin_city_id',
         'destination_id',
-        'price',
         'distance',
         'estimated_duration',
-        'departure_date',
-        'departure_time',
+        'base_price',
         'status',
     ];
 
@@ -41,34 +37,12 @@ class Booking extends Model
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:2',
             'distance' => 'decimal:2',
             'estimated_duration' => 'integer',
-            'departure_date' => 'date',
-            'departure_time' => 'string',
-            'status' => BookingStatus::class,
+            'base_price' => 'decimal:2',
+            'status' => TravelRouteStatus::class,
+            'deleted_at' => 'datetime',
         ];
-    }
-
-    /**
-     * Customer who owns this booking.
-     */
-    public function customer(): BelongsTo
-    {
-        return $this->belongsTo(
-            User::class,
-            'customer_id',
-        );
-    }
-
-    /**
-     * Travel route.
-     */
-    public function travelRoute(): BelongsTo
-    {
-        return $this->belongsTo(
-            TravelRoute::class,
-        );
     }
 
     /**
@@ -89,26 +63,6 @@ class Booking extends Model
     {
         return $this->belongsTo(
             Destination::class,
-        );
-    }
-
-    /**
-     * Payment.
-     */
-    public function payment(): HasOne
-    {
-        return $this->hasOne(
-            Payment::class,
-        );
-    }
-
-    /**
-     * Trip.
-     */
-    public function trip(): HasOne
-    {
-        return $this->hasOne(
-            Trip::class,
         );
     }
 }

@@ -6,7 +6,6 @@ namespace App\Http\Requests;
 
 use App\Enums\UserRole;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
 
 class AnalyzeTravelRequest extends FormRequest
 {
@@ -15,8 +14,7 @@ class AnalyzeTravelRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return Auth::check()
-            && Auth::user()->role === UserRole::CUSTOMER;
+        return $this->user()?->role === UserRole::CUSTOMER;
     }
 
     /**
@@ -30,12 +28,14 @@ class AnalyzeTravelRequest extends FormRequest
             'origin_city_id' => [
                 'required',
                 'integer',
+                'min:1',
                 'exists:cities,id',
             ],
 
             'destination_id' => [
                 'required',
                 'integer',
+                'min:1',
                 'exists:destinations,id',
             ],
 
@@ -62,10 +62,12 @@ class AnalyzeTravelRequest extends FormRequest
         return [
             'origin_city_id.required' => 'Origin city is required.',
             'origin_city_id.integer' => 'Origin city must be a valid selection.',
+            'origin_city_id.min' => 'Origin city is invalid.',
             'origin_city_id.exists' => 'Selected origin city is invalid.',
 
             'destination_id.required' => 'Destination is required.',
             'destination_id.integer' => 'Destination must be a valid selection.',
+            'destination_id.min' => 'Destination is invalid.',
             'destination_id.exists' => 'Selected destination is invalid.',
 
             'departure_date.required' => 'Departure date is required.',

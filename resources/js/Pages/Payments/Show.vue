@@ -1,6 +1,8 @@
 <script setup>
+import { computed } from "vue";
+import { Head, router } from "@inertiajs/vue3";
+
 import MainLayout from "@/Layouts/MainLayout.vue";
-import { Head } from "@inertiajs/vue3";
 
 import Card from "primevue/card";
 import Divider from "primevue/divider";
@@ -17,6 +19,30 @@ const props = defineProps({
         required: true,
     },
 });
+
+/*
+|--------------------------------------------------------------------------
+| Computed
+|--------------------------------------------------------------------------
+*/
+
+const paymentProofUrl = computed(() => {
+    if (!props.payment.payment_proof) {
+        return null;
+    }
+
+    return `/storage/${props.payment.payment_proof}`;
+});
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+function goBack() {
+    router.visit(route("payments.index"));
+}
 
 function formatCurrency(value) {
     if (value === null || value === undefined) {
@@ -66,13 +92,15 @@ function statusSeverity(status) {
                 label="Back"
                 icon="pi pi-arrow-left"
                 outlined
-                @click="$inertia.visit(route('payments.index'))"
+                @click="goBack"
             />
         </div>
 
         <Card>
             <template #content>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Payment Information -->
+
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <div>
                         <strong>Payment Number</strong>
 
@@ -111,7 +139,31 @@ function statusSeverity(status) {
 
                 <Divider />
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <!-- Travel Information -->
+
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <div>
+                        <strong>Origin City</strong>
+
+                        <div>
+                            {{ payment.booking?.origin_city?.name ?? "-" }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong>Destination</strong>
+
+                        <div>
+                            {{ payment.booking?.destination?.name ?? "-" }}
+                        </div>
+                    </div>
+                </div>
+
+                <Divider />
+
+                <!-- Payment Summary -->
+
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
                     <div>
                         <strong>Subtotal</strong>
 
@@ -139,7 +191,9 @@ function statusSeverity(status) {
 
                 <Divider />
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Voucher -->
+
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <div>
                         <strong>Voucher</strong>
 
@@ -159,18 +213,25 @@ function statusSeverity(status) {
 
                 <Divider />
 
+                <!-- Payment Proof -->
+
                 <div>
                     <strong>Payment Proof</strong>
 
                     <div class="mt-3">
                         <img
-                            v-if="payment.payment_proof"
-                            :src="`/storage/${payment.payment_proof}`"
+                            v-if="paymentProofUrl"
+                            :src="paymentProofUrl"
                             alt="Payment Proof"
                             class="max-w-md rounded border"
                         />
 
-                        <span v-else> No payment proof uploaded. </span>
+                        <div
+                            v-else
+                            class="rounded border border-dashed p-6 text-center text-gray-500"
+                        >
+                            No payment proof uploaded.
+                        </div>
                     </div>
                 </div>
             </template>

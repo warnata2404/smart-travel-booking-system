@@ -12,7 +12,6 @@ import AppStatusTag from "@/Components/Table/AppStatusTag.vue";
 
 import Button from "primevue/button";
 import Column from "primevue/column";
-import Tag from "primevue/tag";
 
 import { useConfirm } from "primevue/useconfirm";
 
@@ -21,7 +20,7 @@ defineOptions({
 });
 
 defineProps({
-    destinations: {
+    travelRoutes: {
         type: Array,
         required: true,
     },
@@ -29,46 +28,54 @@ defineProps({
 
 const confirm = useConfirm();
 
-function deleteDestination(destination) {
+function deleteTravelRoute(travelRoute) {
     confirm.require({
-        header: "Delete Destination",
-        message: `Are you sure you want to delete "${destination.name}"?`,
+        header: "Delete Travel Route",
+
+        message: "Are you sure you want to delete this travel route?",
+
         icon: "pi pi-exclamation-triangle",
 
         acceptClass: "p-button-danger",
 
         accept: () => {
-            router.delete(route("destinations.destroy", destination.id));
+            router.delete(route("travel-routes.destroy", travelRoute.id));
         },
     });
 }
 
-function categorySeverity(category) {
-    switch (category) {
-        case "INDOOR":
-            return "info";
-
-        case "OUTDOOR":
-            return "warning";
-
-        default:
-            return "secondary";
+function formatCurrency(value) {
+    if (value === null || value === undefined) {
+        return "-";
     }
+
+    return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(Number(value));
+}
+
+function destinationLabel(destination) {
+    return [destination.city?.name, destination.name, destination.category]
+        .filter(Boolean)
+        .join(" • ");
 }
 </script>
 
 <template>
-    <Head title="Destinations" />
+    <Head title="Travel Routes" />
 
     <div class="space-y-6">
         <AppPageHeader
-            title="Destination Management"
-            description="Manage travel destinations."
+            title="Travel Route Management"
+            description="Manage travel routes between origin city and destination."
         >
             <template #actions>
                 <AppPageToolbar>
-                    <Link :href="route('destinations.create')">
-                        <Button label="Add Destination" icon="pi pi-plus" />
+                    <Link :href="route('travel-routes.create')">
+                        <Button label="Add Travel Route" icon="pi pi-plus" />
                     </Link>
                 </AppPageToolbar>
             </template>
@@ -76,23 +83,36 @@ function categorySeverity(category) {
 
         <AppPageCard>
             <AppDataTable
-                :value="destinations"
-                emptyMessage="No destinations found."
+                :value="travelRoutes"
+                emptyMessage="No travel routes found."
             >
-                <Column field="name" header="Destination" sortable />
-
-                <Column header="City" sortable>
+                <Column header="Origin City" sortable>
                     <template #body="{ data }">
-                        {{ data.city.name }}
+                        {{ data.origin_city?.name ?? "-" }}
                     </template>
                 </Column>
 
-                <Column header="Category" style="width: 140px">
+                <Column header="Destination" style="min-width: 260px">
                     <template #body="{ data }">
-                        <Tag
-                            :value="data.category"
-                            :severity="categorySeverity(data.category)"
-                        />
+                        {{ destinationLabel(data.destination) }}
+                    </template>
+                </Column>
+
+                <Column field="distance" header="Distance" sortable>
+                    <template #body="{ data }">
+                        {{ Number(data.distance).toFixed(2) }} km
+                    </template>
+                </Column>
+
+                <Column field="estimated_duration" header="Duration" sortable>
+                    <template #body="{ data }">
+                        {{ data.estimated_duration }} minutes
+                    </template>
+                </Column>
+
+                <Column field="base_price" header="Base Price" sortable>
+                    <template #body="{ data }">
+                        {{ formatCurrency(data.base_price) }}
                     </template>
                 </Column>
 
@@ -105,7 +125,7 @@ function categorySeverity(category) {
                 <Column header="Actions" style="width: 170px">
                     <template #body="{ data }">
                         <div class="flex items-center gap-2">
-                            <Link :href="route('destinations.edit', data.id)">
+                            <Link :href="route('travel-routes.edit', data.id)">
                                 <Button
                                     icon="pi pi-pencil"
                                     severity="warning"
@@ -117,7 +137,7 @@ function categorySeverity(category) {
                                 icon="pi pi-trash"
                                 severity="danger"
                                 outlined
-                                @click="deleteDestination(data)"
+                                @click="deleteTravelRoute(data)"
                             />
                         </div>
                     </template>

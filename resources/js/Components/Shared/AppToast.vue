@@ -1,53 +1,55 @@
 <script setup>
-import { usePage } from "@inertiajs/vue3";
-import { useToast } from "primevue/usetoast";
-import Toast from "primevue/toast";
 import { onMounted, watch } from "vue";
+import { usePage } from "@inertiajs/vue3";
+
+import Toast from "primevue/toast";
+import { useToast } from "primevue/usetoast";
 
 const toast = useToast();
-
 const page = usePage();
+
+const displayedMessages = new Set();
+
+function addToast(severity, summary, detail, icon) {
+    if (!detail) {
+        return;
+    }
+
+    const key = `${severity}:${detail}`;
+
+    if (displayedMessages.has(key)) {
+        return;
+    }
+
+    displayedMessages.add(key);
+
+    toast.add({
+        group: "app",
+        severity,
+        summary,
+        detail,
+        life: 4000,
+        closable: true,
+        icon,
+    });
+
+    setTimeout(() => {
+        displayedMessages.delete(key);
+    }, 4500);
+}
 
 function showFlashMessages(flash) {
     if (!flash) {
         return;
     }
 
-    if (flash.success) {
-        toast.add({
-            severity: "success",
-            summary: "Success",
-            detail: flash.success,
-            life: 3000,
-        });
-    }
+    addToast("success", "Success", flash.success, "pi pi-check-circle");
 
-    if (flash.error) {
-        toast.add({
-            severity: "error",
-            summary: "Error",
-            detail: flash.error,
-            life: 3000,
-        });
-    }
+    addToast("error", "Error", flash.error, "pi pi-times-circle");
 
-    if (flash.warning) {
-        toast.add({
-            severity: "warn",
-            summary: "Warning",
-            detail: flash.warning,
-            life: 3000,
-        });
-    }
+    addToast("warn", "Warning", flash.warning, "pi pi-exclamation-triangle");
 
-    if (flash.info) {
-        toast.add({
-            severity: "info",
-            summary: "Information",
-            detail: flash.info,
-            life: 3000,
-        });
-    }
+    addToast("info", "Information", flash.info, "pi pi-info-circle");
 }
 
 onMounted(() => {
@@ -66,5 +68,28 @@ watch(
 </script>
 
 <template>
-    <Toast position="top-right" />
+    <Toast
+        group="app"
+        position="top-right"
+        :pt="{
+            root: {
+                class: 'mt-4',
+            },
+            message: {
+                class: 'overflow-hidden rounded-xl border border-slate-200 shadow-xl',
+            },
+            content: {
+                class: 'px-4 py-4',
+            },
+            summary: {
+                class: 'font-semibold text-slate-900',
+            },
+            detail: {
+                class: 'mt-1 text-sm leading-5 text-slate-600',
+            },
+            closeButton: {
+                class: 'text-slate-500 hover:text-slate-700',
+            },
+        }"
+    />
 </template>

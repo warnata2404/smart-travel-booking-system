@@ -1,6 +1,8 @@
 <script setup>
+import { computed } from "vue";
+import { Head, router, useForm } from "@inertiajs/vue3";
+
 import MainLayout from "@/Layouts/MainLayout.vue";
-import { Head, useForm } from "@inertiajs/vue3";
 
 import Card from "primevue/card";
 import Divider from "primevue/divider";
@@ -18,16 +20,62 @@ const props = defineProps({
     },
 });
 
+/*
+|--------------------------------------------------------------------------
+| Forms
+|--------------------------------------------------------------------------
+*/
+
 const startForm = useForm({});
 const completeForm = useForm({});
 
+/*
+|--------------------------------------------------------------------------
+| Computed
+|--------------------------------------------------------------------------
+*/
+
+const canStart = computed(() => {
+    return props.trip.status === "NOT_STARTED";
+});
+
+const canComplete = computed(() => {
+    return props.trip.status === "ON_GOING";
+});
+
+/*
+|--------------------------------------------------------------------------
+| Navigation
+|--------------------------------------------------------------------------
+*/
+
+function goBack() {
+    router.visit(route("trips.index"));
+}
+
+/*
+|--------------------------------------------------------------------------
+| Actions
+|--------------------------------------------------------------------------
+*/
+
 function startTrip() {
-    startForm.post(route("trips.start", props.trip.id));
+    startForm.post(route("trips.start", props.trip.id), {
+        preserveScroll: true,
+    });
 }
 
 function completeTrip() {
-    completeForm.post(route("trips.complete", props.trip.id));
+    completeForm.post(route("trips.complete", props.trip.id), {
+        preserveScroll: true,
+    });
 }
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
 
 function statusSeverity(status) {
     switch (status) {
@@ -45,20 +93,20 @@ function statusSeverity(status) {
     }
 }
 
-function formatDate(date) {
-    if (!date) {
+function formatDate(value) {
+    if (!value) {
         return "-";
     }
 
-    return new Date(date).toLocaleString("id-ID");
+    return new Date(value).toLocaleString("id-ID");
 }
 
-function formatDistance(distance) {
-    if (distance === null || distance === undefined) {
+function formatDistance(value) {
+    if (value === null || value === undefined) {
         return "-";
     }
 
-    return `${Number(distance).toFixed(2)} km`;
+    return `${Number(value).toFixed(2)} km`;
 }
 
 function formatCurrency(value) {
@@ -88,18 +136,20 @@ function formatCurrency(value) {
                 label="Back"
                 icon="pi pi-arrow-left"
                 outlined
-                @click="$inertia.visit(route('trips.index'))"
+                @click="goBack"
             />
         </div>
 
         <Card>
             <template #content>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Trip Information -->
+
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <div>
                         <strong>Booking Number</strong>
 
                         <div>
-                            {{ trip.booking?.booking_number }}
+                            {{ trip.booking?.booking_number ?? "-" }}
                         </div>
                     </div>
 
@@ -118,7 +168,19 @@ function formatCurrency(value) {
                         <strong>Customer</strong>
 
                         <div>
-                            {{ trip.booking?.customer?.name }}
+                            {{ trip.booking?.customer?.name ?? "-" }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong>Origin City</strong>
+
+                        <div>
+                            {{
+                                trip.booking?.originCity?.name ??
+                                trip.booking?.origin_city?.name ??
+                                "-"
+                            }}
                         </div>
                     </div>
 
@@ -126,7 +188,7 @@ function formatCurrency(value) {
                         <strong>Destination</strong>
 
                         <div>
-                            {{ trip.booking?.destination_name }}
+                            {{ trip.booking?.destination?.name ?? "-" }}
                         </div>
                     </div>
 
@@ -165,9 +227,36 @@ function formatCurrency(value) {
 
                 <Divider />
 
+                <!-- Reward -->
+
+                <div
+                    v-if="trip.reward"
+                    class="grid grid-cols-1 gap-5 md:grid-cols-2"
+                >
+                    <div>
+                        <strong>Reward Point</strong>
+
+                        <div>
+                            {{ trip.reward.points ?? "-" }}
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong>Voucher</strong>
+
+                        <div>
+                            {{ trip.reward.voucher?.code ?? "-" }}
+                        </div>
+                    </div>
+                </div>
+
+                <Divider v-if="trip.reward" />
+
+                <!-- Actions -->
+
                 <div class="flex gap-3">
                     <Button
-                        v-if="trip.status === 'NOT_STARTED'"
+                        v-if="canStart"
                         label="Start Trip"
                         icon="pi pi-play"
                         :loading="startForm.processing"
@@ -175,7 +264,7 @@ function formatCurrency(value) {
                     />
 
                     <Button
-                        v-if="trip.status === 'ON_GOING'"
+                        v-if="canComplete"
                         label="Complete Trip"
                         icon="pi pi-check"
                         severity="success"

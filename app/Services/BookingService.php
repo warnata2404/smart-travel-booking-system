@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\BookingStatus;
+use App\Enums\TravelRouteStatus;
 use App\Enums\UserRole;
 use App\Models\Booking;
-use App\Models\Destination;
+use App\Models\TravelRoute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -17,12 +18,6 @@ class BookingService
     /**
      * Get all bookings.
      *
-     * Admin:
-     * - View all bookings.
-     *
-     * Customer:
-     * - View own bookings only.
-     *
      * @return Collection<int, Booking>
      */
     public function getAll(): Collection
@@ -30,6 +25,10 @@ class BookingService
         $query = Booking::query()
             ->with([
                 'customer',
+                'travelRoute',
+                'travelRoute.originCity',
+                'travelRoute.destination',
+                'travelRoute.destination.city',
                 'originCity',
                 'destination',
                 'payment',
@@ -49,18 +48,16 @@ class BookingService
 
     /**
      * Get booking by ID.
-     *
-     * Admin:
-     * - View any booking.
-     *
-     * Customer:
-     * - View own booking only.
      */
     public function getById(int $id): Booking
     {
         $query = Booking::query()
             ->with([
                 'customer',
+                'travelRoute',
+                'travelRoute.originCity',
+                'travelRoute.destination',
+                'travelRoute.destination.city',
                 'originCity',
                 'destination',
                 'payment',
@@ -87,29 +84,66 @@ class BookingService
     {
         return DB::transaction(function () use ($data): Booking {
 
-            $destination = Destination::query()
-                ->findOrFail($data['destination_id']);
+            $travelRoute = TravelRoute::query()
+                ->with([
+                    'originCity',
+                    'destination',
+                    'destination.city',
+                ])
+                ->where(
+                    'status',
+                    TravelRouteStatus::ACTIVE,
+                )
+                ->findOrFail(
+                    $data['travel_route_id'],
+                );
 
-            return Booking::query()->create([
+            $booking = Booking::query()->create([
+
                 'booking_number' => $this->generateBookingNumber(),
 
                 'customer_id' => Auth::id(),
 
-                'origin_city_id' => $data['origin_city_id'],
+                'travel_route_id' => $travelRoute->id,
 
-                'destination_id' => $destination->id,
+                /*
+                |--------------------------------------------------------------------------
+                | Booking Snapshot
+                |--------------------------------------------------------------------------
+                |
+                | Snapshot values are copied from the selected Travel Route so
+                | historical booking data remains unchanged even if the Travel
+                | Route is updated in the future.
+                |
+                */
 
-                'price' => $destination->price,
+                'origin_city_id' => $travelRoute->origin_city_id,
 
-                'distance' => $destination->distance,
+                'destination_id' => $travelRoute->destination_id,
 
-                'estimated_duration' => $destination->estimated_duration,
+                'price' => $travelRoute->base_price,
+
+                'distance' => $travelRoute->distance,
+
+                'estimated_duration' => $travelRoute->estimated_duration,
 
                 'departure_date' => $data['departure_date'],
 
                 'departure_time' => $data['departure_time'],
 
                 'status' => BookingStatus::PENDING_PAYMENT,
+            ]);
+
+            return $booking->load([
+                'customer',
+                'travelRoute',
+                'travelRoute.originCity',
+                'travelRoute.destination',
+                'travelRoute.destination.city',
+                'originCity',
+                'destination',
+                'payment',
+                'trip',
             ]);
         });
     }
@@ -127,7 +161,10 @@ class BookingService
             );
         } while (
             Booking::query()
-            ->where('booking_number', $bookingNumber)
+            ->where(
+                'booking_number',
+                $bookingNumber,
+            )
             ->exists()
         );
 

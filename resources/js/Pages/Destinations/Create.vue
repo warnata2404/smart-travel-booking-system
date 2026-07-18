@@ -13,7 +13,6 @@ import AppFormActions from "@/Components/Form/AppFormActions.vue";
 
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
-import InputNumber from "primevue/inputnumber";
 import Textarea from "primevue/textarea";
 import Select from "primevue/select";
 
@@ -42,9 +41,6 @@ const form = useForm({
     city_id: null,
     name: "",
     category: null,
-    price: null,
-    distance: null,
-    estimated_duration: null,
     description: "",
     status: "ACTIVE",
 });
@@ -115,40 +111,15 @@ function submit() {
                         </AppFormField>
 
                         <AppFormField
-                            label="Price"
-                            :error="form.errors.price"
+                            label="Status"
+                            :error="form.errors.status"
                             required
                         >
-                            <InputNumber
-                                v-model="form.price"
-                                mode="currency"
-                                currency="IDR"
-                                locale="id-ID"
-                                fluid
-                            />
-                        </AppFormField>
-
-                        <AppFormField
-                            label="Distance (km)"
-                            :error="form.errors.distance"
-                            required
-                        >
-                            <InputNumber
-                                v-model="form.distance"
-                                :minFractionDigits="2"
-                                :maxFractionDigits="2"
-                                fluid
-                            />
-                        </AppFormField>
-
-                        <AppFormField
-                            label="Estimated Duration (minutes)"
-                            :error="form.errors.estimated_duration"
-                            required
-                        >
-                            <InputNumber
-                                v-model="form.estimated_duration"
-                                :min="1"
+                            <Select
+                                v-model="form.status"
+                                :options="statuses"
+                                optionLabel="label"
+                                optionValue="value"
                                 fluid
                             />
                         </AppFormField>
@@ -159,20 +130,6 @@ function submit() {
                         :error="form.errors.description"
                     >
                         <Textarea v-model="form.description" rows="4" fluid />
-                    </AppFormField>
-
-                    <AppFormField
-                        label="Status"
-                        :error="form.errors.status"
-                        required
-                    >
-                        <Select
-                            v-model="form.status"
-                            :options="statuses"
-                            optionLabel="label"
-                            optionValue="value"
-                            fluid
-                        />
                     </AppFormField>
                 </AppFormSection>
 

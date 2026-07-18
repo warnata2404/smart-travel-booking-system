@@ -2,6 +2,11 @@
 import Message from "primevue/message";
 
 defineProps({
+    id: {
+        type: String,
+        default: "",
+    },
+
     label: {
         type: String,
         required: true,
@@ -17,6 +22,11 @@ defineProps({
         default: false,
     },
 
+    optional: {
+        type: Boolean,
+        default: false,
+    },
+
     helper: {
         type: String,
         default: "",
@@ -25,20 +35,48 @@ defineProps({
 </script>
 
 <template>
-    <div class="space-y-2">
-        <label class="block font-medium text-gray-900">
-            {{ label }}
+    <div class="space-y-2.5">
+        <!-- Label -->
+        <label
+            v-if="label || $slots.label"
+            :for="id || undefined"
+            class="flex items-center gap-1 text-sm font-semibold text-slate-800"
+        >
+            <slot name="label">
+                {{ label }}
+            </slot>
 
-            <span v-if="required" class="ml-1 text-red-500"> * </span>
+            <span v-if="required" class="text-red-500" aria-hidden="true">
+                *
+            </span>
+
+            <span
+                v-else-if="optional"
+                class="text-xs font-normal text-slate-400"
+            >
+                (Optional)
+            </span>
         </label>
 
+        <!-- Input -->
         <slot />
 
-        <small v-if="helper && !error" class="block text-gray-500">
+        <!-- Helper -->
+        <small
+            v-if="helper && !error"
+            class="block text-xs leading-5 text-slate-500"
+        >
             {{ helper }}
         </small>
 
-        <Message v-if="error" severity="error" size="small" variant="simple">
+        <!-- Validation -->
+        <Message
+            v-if="error"
+            severity="error"
+            size="small"
+            variant="simple"
+            class="mt-1"
+        >
             {{ error }}
         </Message>
     </div>

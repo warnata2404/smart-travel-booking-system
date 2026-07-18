@@ -6,8 +6,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AnalyzeTravelRequest;
 use App\Services\CityService;
-use App\Services\DestinationService;
 use App\Services\TravelAnalysisService;
+use App\Services\TravelRouteService;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,7 +16,7 @@ class TravelAnalysisController extends Controller
     public function __construct(
         private readonly TravelAnalysisService $travelAnalysisService,
         private readonly CityService $cityService,
-        private readonly DestinationService $destinationService,
+        private readonly TravelRouteService $travelRouteService,
     ) {}
 
     /**
@@ -25,11 +25,13 @@ class TravelAnalysisController extends Controller
     public function index(): Response
     {
         return Inertia::render('TravelAnalysis/Index', [
+
             'cities' => $this->cityService->getAll(),
 
-            'destinations' => $this->destinationService->getAll(),
+            'travelRoutes' => $this->travelRouteService->getAll(),
 
             'analysisResult' => null,
+
         ]);
     }
 
@@ -45,11 +47,13 @@ class TravelAnalysisController extends Controller
         );
 
         return Inertia::render('TravelAnalysis/Index', [
+
             'cities' => $this->cityService->getAll(),
 
-            'destinations' => $this->destinationService->getAll(),
+            'travelRoutes' => $this->travelRouteService->getAll(),
 
             'analysisResult' => $analysisResult,
+
         ]);
     }
 }
